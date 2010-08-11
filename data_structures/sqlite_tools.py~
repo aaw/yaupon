@@ -1,0 +1,24 @@
+import sqlite3
+
+def to_db(value, pickle_protocol = 2):
+    has_proxy = getattr(value, 'proxify', None)
+    if has_proxy is not None:
+        value = value.proxify()
+    return sqlite3.Binary(pickle.dumps(value, pickle_protocol))
+
+# context is only used when deproxification might happen
+# TODO: context should really be changed to backend...
+def from_db(value, context=None):
+    retval = pickle.loads(str(value))
+    is_proxy = getattr(retval, 'deproxify', None)
+    if is_proxy is not None:
+        retval = retval.deproxify(context)
+    return retval
+
+
+class SQLitePickleProxy(object):
+    def __init__(self, dict_id):
+        self.dict_id = dict_id
+
+    def deproxify(self, context):
+        return SQLiteDict(conn=context.conn, id=self.dict_id)

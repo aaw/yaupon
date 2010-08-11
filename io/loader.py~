@@ -1,0 +1,16 @@
+import os
+
+import yaupon
+import yaupon.io.ygp as ygp
+
+def load(path, GraphType = None):
+     if GraphType is None:
+         GraphType = yaupon.Graph
+     for file in os.listdir(path):
+         if os.path.isfile(file):
+             g = GraphType()
+             fullname = os.path.join(path, file)
+             ygp.load(open(fullname, 'rb'), g)
+             yield g
+         elif os.path.isdir(file):
+             load(os.path.join(path, file), GraphType)

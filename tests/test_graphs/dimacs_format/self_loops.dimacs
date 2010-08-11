@@ -1,0 +1,7 @@
+c A graph with two edges and two self loops
+p edge 3 5
+e 1 2
+e 1 1
+e 2 3
+e 2 2
+e 3 3

@@ -1,0 +1,3 @@
+class VertexNotFound(KeyError)
+
+class EdgeNotFound(KeyError)

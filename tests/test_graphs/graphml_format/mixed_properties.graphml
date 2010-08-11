@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns 
+        http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="node" attr.name="is_special" attr.type="boolean">
+    <default>false</default>
+  </key>
+  <key id="d1" for="edge" attr.name="weight" attr.type="int"/>
+  <key id="d2" for="node" attr.name="label" attr.type="string">
+    <default>No Name</default>
+  </key>
+  <graph id="G">
+    <node id="n0">
+      <data key="d0">true</data>
+    </node>
+    <node id="n1"/>
+    <node id="n2">
+      <data key="d0">true</data>
+	<data key="d2">Node 2</data>
+    </node>
+    <node id="n3">
+      <data key="d0">true</data>
+    </node>
+    <node id="n4">
+      <data key="d2">Node 4</data>
+    </node>
+    <node id="n5">
+      <data key="d2">Node 5</data>
+      <data key="d0">true</data>
+    </node>
+    <edge id="e0" source="n0" target="n2">
+      <data key="d1">1</data>
+    </edge>
+    <edge id="e1" source="n0" target="n1">
+      <data key="d1">2</data>
+    </edge>
+    <edge id="e2" source="n1" target="n3">
+      <data key="d1">3</data>
+    </edge>
+    <edge id="e3" source="n3" target="n2"/>
+    <edge id="e4" source="n2" target="n4"/>
+    <edge id="e5" source="n3" target="n5"/>
+    <edge id="e6" source="n5" target="n4">
+      <data key="d1">4</data>
+    </edge>
+  </graph>
+</graphml>

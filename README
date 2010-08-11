@@ -1,0 +1,37 @@
+yaupon is a graph library written in Python. Some of the goals of yaupon 
+include:
+
+- A simple graph interface that works well with in-memory graphs, large graphs 
+  that can’t be held in memory all at once, and even infinite, lazily 
+  generated graphs
+- Efficient implementations of graph and tree classes
+- Easy-to-use suites of graph algorithm implementations: find the shortest 
+  path in a graph by calling shortest_path, not by figuring out exactly which 
+  shortest path algorithm you need.
+- Clear, comprehensive documentation.
+
+Developer notes
+
+yaupon is currently tested against Python 2.6, and has no other dependencies 
+unless you want to build the documentation or run tests.
+
+-------------------------------------------------------------------------------
+
+To run tests, you'll need py.test from py lib. Using easy_install from 
+setuptools or Distribute, just run
+
+easy_install -U py
+
+Then change to the top-level yaupon directory and run "py.test".
+
+-------------------------------------------------------------------------------
+
+To build docs, you'll need Sphinx, which you can also easy_install with:
+
+easy_install -U Sphinx
+
+You probably also want pygments for syntax highlighting:
+
+easy_install -U pygments
+
+Go to the doc directory and run the build-docs script.

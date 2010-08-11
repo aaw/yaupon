@@ -1,0 +1,3 @@
+c A simple graph - two vertices connected by an edge
+p edge 2 1
+e 1 2

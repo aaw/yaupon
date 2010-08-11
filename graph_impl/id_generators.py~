@@ -1,0 +1,13 @@
+import uuid
+
+class UUIDGenerator(object):
+    def get_id(self):
+        return uuid.uuid4()
+
+class IntGenerator(object):
+    def __init__(self):
+        self.next_id = 0
+
+    def get_id(self):
+        self.next_id += 1
+        return self.next_id
