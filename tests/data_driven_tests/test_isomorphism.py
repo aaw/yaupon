@@ -8,6 +8,7 @@ import yaupon.algorithm.exceptions
 def pytest_generate_tests(metafunc):
     graph_database_iteration(metafunc)
 
+@py.test.skip
 def test_isomorphism(graph):
     g = graph()
     g2 = yaupon.Graph()
