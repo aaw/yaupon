@@ -8,7 +8,6 @@ import yaupon.algorithm.exceptions
 def pytest_generate_tests(metafunc):
     graph_database_iteration(metafunc)
 
-@py.test.skip
 def test_isomorphism(graph):
     g = graph()
     g2 = yaupon.Graph()
@@ -22,8 +21,8 @@ def test_isomorphism(graph):
     iso = isomorphism.compile(g,g2)
     image_edges = set()
     for u,v in g.edges():
-        g2_edges = [x for x in g2.edges(source=vertex_mapping[u],
-                                        target=vertex_mapping[v])]
+        g2_edges = [x for x in g2.edges(source=iso[u],
+                                        target=iso[v])]
         for edge in g2_edges:
             assert edge not in image_edges
             image_edges.add(edge)
