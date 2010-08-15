@@ -36,7 +36,9 @@ class SQLiteDict(object):
     def __init__(self, 
                  backend=None,
                  id=None,
-                 pickle_protocol=2):
+                 pickle_protocol=2,
+                 dict_args=None,
+                 dict_kwargs=None):
         if backend is None:
             backend = yaupon.backend.BackendSQLite()
         self.backend = yaupon.backend.getbackend(backend)
@@ -60,10 +62,18 @@ class SQLiteDict(object):
                           """ % (self.id, self.id))
         self.conn.commit()
 
-        self.__get_STMT = 'SELECT value FROM dict_%s WHERE key = ?' % self.id
+        self.__get_STMT = 'SELECT value FROM dict_%s WHERE key = ?' % \
+                          self.id
         self.__set_STMT = """REPLACE INTO dict_%s (key, value) 
                              VALUES (?,?)""" % self.id
         self.__delete_STMT = 'DELETE FROM dict_%s WHERE key = ?' % self.id
+
+        if dict_args is None:
+            dict_args = []
+        if dict_kwargs is None:
+            dict_kwargs = {}
+        initial_dict = dict(*dict_args, **dict_kwargs)
+        self.update(initial_dict)
 
     def __getstate__(self):
         state = self.__dict__.copy()

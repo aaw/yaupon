@@ -1,4 +1,5 @@
 import py.test
+import yaupon
 import yaupon.data_structures.sqlite_dict as sqlite_dict
 from yaupon.backend import BackendSQLite
 
@@ -180,3 +181,15 @@ def test_multiple_instances_same_dict():
     assert [x for x in d1.iteritems()] == [x for x in d2.iteritems()]
     d2['c'] = 3
     assert [x for x in d1.iteritems()] == [x for x in d2.iteritems()]
+
+def test_dict_construction_options():
+    backend = BackendSQLite()
+    d1 = yaupon.ydict(backend, one=2, two=3)
+    d2 = yaupon.ydict(backend, {'one':2, 'two':3})
+    d3 = yaupon.ydict(backend, zip(('one', 'two'), (2,3)))
+    d4 = yaupon.ydict(backend, [['two', 3], ['one', 2]])
+    expected_items = sorted([('one',2), ('two',3)])
+    assert sorted([x for x in d1.iteritems()]) == expected_items
+    assert sorted([x for x in d2.iteritems()]) == expected_items
+    assert sorted([x for x in d3.iteritems()]) == expected_items
+    assert sorted([x for x in d4.iteritems()]) == expected_items

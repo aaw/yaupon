@@ -65,7 +65,9 @@ class BackendSQLite(object):
 
     def create_dict(self, *args, **kwargs):
         from yaupon.data_structures.sqlite_dict import SQLiteDict
-        return SQLiteDict(backend=self, *args, **kwargs)
+        return SQLiteDict(backend=self, 
+                          dict_args=args, 
+                          dict_kwargs=kwargs)
 
     def sorted(self, *args, **kwargs):
         from yaupon.data_structures.dheap import DHeap
