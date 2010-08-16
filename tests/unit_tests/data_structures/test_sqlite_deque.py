@@ -1,3 +1,4 @@
+import yaupon
 from yaupon.backend import BackendSQLite
 import yaupon.data_structures.sqlite_deque as deque
 from yaupon.tests.testutils import TempFile
@@ -180,3 +181,10 @@ def test_multiple_instances_same_deque():
     assert [x for x in q] == [x for x in q2]
     q2.pop()
     assert [x for x in q] == [x for x in q2]
+
+def test_construct_from_iterable():
+    backend = BackendSQLite()
+    q = yaupon.ydeque(backend, [1, 2, 3, 4])
+    assert [x for x in q] == [1, 2, 3, 4]
+    q = yaupon.ydeque(backend, (1, 2, 3, 4))
+    assert [x for x in q] == [1, 2, 3, 4]

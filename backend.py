@@ -59,9 +59,9 @@ class BackendSQLite(object):
     def __backend__(self):
         return self
 
-    def create_deque(self, *args, **kwargs):
+    def create_deque(self, iterable=None):
         from yaupon.data_structures.sqlite_deque import SQLiteDeque
-        return SQLiteDeque(backend=self, *args, **kwargs)
+        return SQLiteDeque(backend=self, iterable=iterable)
 
     def create_dict(self, *args, **kwargs):
         from yaupon.data_structures.sqlite_dict import SQLiteDict

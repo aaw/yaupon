@@ -19,7 +19,8 @@ class SQLiteDeque(object):
     def __init__(self, 
                  backend=None,
                  id = None,
-                 pickle_protocol = 2):
+                 pickle_protocol = 2,
+                 iterable=None):
         if backend is None:
             backend = yaupon.backend.BackendSQLite()
         self.backend = yaupon.backend.getbackend(backend)
@@ -69,6 +70,10 @@ class SQLiteDeque(object):
                                            WHERE f.id = %s""" % \
                                            (self.id, self.id)
 
+        if iterable is None:
+            iterable = []
+        self.extend(iterable)
+
     def __backend__(self):
         return self.backend
 
@@ -102,14 +107,16 @@ class SQLiteDeque(object):
         else:
             sql = self.__set_element_from_front
         cursor = self.conn.execute(sql, 
-                                   (index, to_db(value, self.pickle_protocol)))
+                                   (index, to_db(value, 
+                                                 self.pickle_protocol)))
 
     def __iter__(self):
         cursor = self.conn.execute("""SELECT d.value 
                                       FROM deque_%s d, deque_fingers f
                                       WHERE d.id >= f.front
                                         AND d.id < f.back
-                                        AND f.id = ?""" % self.id, (self.id,))
+                                        AND f.id = ?""" % \
+                                        self.id, (self.id,))
         return SQLiteDequeIterator(cursor)
 
     def __increment_front_finger(self):
