@@ -3,22 +3,37 @@ import math
 from yaupon.backend import BackendCore
 from yaupon.data_structures import ydeque, ydict
 
+def supermin(iterable, cmp=cmp, key=None):
+    if key is None:
+        key = lambda x : x
+    curr_min = None
+    for x in iterable:
+        if curr_min is None or cmp(key(x), key(curr_min)) < 0:
+            curr_min = x
+    return curr_min
+
 class DHeap(object):
 
-    def __init__(self, backend, items = None, d = 3, key = None):
+    def __init__(self, 
+                 backend, 
+                 items=None,
+                 d=3,
+                 cmp=cmp,
+                 key=None):
         self.__backend = backend
         self.__d = d
-        self.__key = ydict(backend=self.__backend)
+        self.cmp = cmp
+        self.key = ydict(backend=self.__backend)
         self.__heap_index = ydict(backend=self.__backend)
         if key is not None:
             for k,v in key.iteritems():
-                self.__key[k] = v
+                self.key[k] = v
         self.__heap = ydeque(backend=self.__backend)
         if items is not None:
             for item in items:
                 self.__heap.append(item)
-                if item not in self.__key:
-                    self.__key[item] = item
+                if item not in self.key:
+                    self.key[item] = item
             self.__heapify()
 
     def __heapify(self):
@@ -45,7 +60,9 @@ class DHeap(object):
     def __min_child(self, pos):
         children = self.__children(pos)
         return None if not children else \
-               min(children,key = lambda x : self.__key[self.__heap[x]])
+               supermin(children,
+                        key=lambda x : self.key[self.__heap[x]],
+                        cmp=self.cmp)
 
     def __update_index(self, pos):
         self.__heap_index[self.__heap[pos]] = pos
@@ -55,7 +72,7 @@ class DHeap(object):
             pos = self.__heap_index[item]
         parent = self.__parent(pos)
         while parent is not None and \
-              self.__key[self.__heap[parent]] > self.__key[item]:
+              self.cmp(self.key[self.__heap[parent]], self.key[item]) > 0:
             self.__heap[pos] = self.__heap[parent]
             self.__update_index(pos)
             pos, parent = parent, self.__parent(parent)
@@ -67,7 +84,7 @@ class DHeap(object):
             pos = self.__heap_index[item]
         child = self.__min_child(pos)
         while child is not None and \
-              self.__key[self.__heap[child]] < self.__key[item]:
+              self.cmp(self.key[self.__heap[child]], self.key[item]) < 0:
             self.__heap[pos] = self.__heap[child]
             self.__update_index(pos)
             pos, child = child, self.__min_child(child)
@@ -80,7 +97,7 @@ class DHeap(object):
         swap_item = self.__heap.pop()
         del self.__heap_index[item]
         if item_index != len(self.__heap):
-            if self.__key[swap_item] > self.__key[item]:
+            if self.cmp(self.key[swap_item], self.key[item]) > 0:
                 self.__siftdown(swap_item, item_index)
             else:
                 self.__siftup(swap_item, item_index)
@@ -95,7 +112,7 @@ class DHeap(object):
         """
         Return the minimum key value from the heap
         """
-        return None if not self.__heap else self.__key[self.__heap[0]]
+        return None if not self.__heap else self.key[self.__heap[0]]
     
     def insert(self, item, key = None):
         """
@@ -105,9 +122,9 @@ class DHeap(object):
         key map, the key is taken to be the item itself.
         """
         if key is not None:
-            self.__key[item] = key
-        elif item not in self.__key:
-            self.__key[item] = item
+            self.key[item] = key
+        elif item not in self.key:
+            self.key[item] = item
         self.__heap.append(None)
         self.__siftup(item, len(self.__heap) - 1)
 
@@ -129,24 +146,24 @@ class DHeap(object):
         take precedence.
         """
         self.__heap.extend(heap)
-        self.__key.update(heap.__key)
+        self.key.update(heap.key)
         self.__heapify()
         
     def modifykey(self, item, new_key):
         """
         Change the key associated with the given item.
         """
-        old_key, self.__key[item] = self.__key[item], new_key
-        if new_key < old_key:
+        old_key, self.key[item] = self.key[item], new_key
+        if self.cmp(new_key, old_key) < 0:
             self.__siftup(item)
-        elif new_key > old_key:
+        elif self.cmp(new_key, old_key) > 0:
             self.__siftdown(item)
         
     def getkey(self, item):
         """
         Return the key that the heap has associated with the given item
         """
-        return self.__key.get(item)
+        return self.key.get(item)
 
     def __contains__(self, item):
         return self.__heap_index.get(item) is not None

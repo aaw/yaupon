@@ -69,12 +69,13 @@ class BackendSQLite(object):
                           dict_args=args, 
                           dict_kwargs=kwargs)
 
-    def sorted(self, *args, **kwargs):
+    def sorted(self, iterable, cmp=cmp, key=None, reverse=False):
         from yaupon.data_structures.dheap import DHeap
-        if 'key' in kwargs:
-            heap = DHeap(backend=self, items=args[0], key=kwargs['key'])
+        if reverse:
+            mycmp = lambda x,y : -1 * cmp(x, y)
         else:
-            heap = DHeap(backend=self, items=args[0])
+            mycmp = cmp
+        heap = DHeap(backend=self, items=iterable, cmp=mycmp, key=key)
         while heap:
             yield heap.deletemin()
 
