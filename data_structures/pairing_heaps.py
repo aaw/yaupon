@@ -1,5 +1,5 @@
 import yaupon
-from itertools import tee, izip_longest, islice
+from itertools import tee, izip, izip_longest, islice
 
 def takepairs(iterator):
     """
@@ -68,7 +68,7 @@ class PairingHeap(object):
 
     def deletemin(self):
          old_head = self.head
-        to_merge = []
+        to_merge = yaupon.ydeque(backend=self.nodes)
         for first, second in takepairs(self.__getchildren(old_head)):
             if second is None:
                 to_merge.append(first)
