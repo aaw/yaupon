@@ -70,14 +70,26 @@ class BackendSQLite(object):
                           dict_kwargs=kwargs)
 
     def sorted(self, iterable, cmp=cmp, key=None, reverse=False):
-        from yaupon.data_structures.dheap import DHeap
+        from yaupon.data_structures.pairing_heaps import PairingHeap
         if reverse:
             mycmp = lambda x,y : -1 * cmp(x, y)
         else:
             mycmp = cmp
-        heap = DHeap(backend=self, items=iterable, cmp=mycmp, key=key)
+        heap = PairingHeap(backend=self, cmp=mycmp)
+        for item in iterable:
+            item_key = heap.getkey(item)
+            if item_key is not None:
+                heap.modifykey(item, (item_key[0], item_key[1] + 1))
+            else:
+                item_key = item
+                if key is not None:
+                    item_key = key(item)
+                heap.insert(item, (item_key, 1))
         while heap:
-            yield heap.deletemin()
+            min_key = heap.findminkey()
+            min_item = heap.deletemin()
+            for i in xrange(min_key[1]):
+                yield min_item
 
 # sqlite_backend_cache : backend_id -> connection
 sqlite_connection_cache = {}

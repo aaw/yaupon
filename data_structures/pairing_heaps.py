@@ -1,4 +1,4 @@
-import yaupon
+from yaupon import ydict, ydeque
 from itertools import tee, izip, izip_longest, islice
 
 def takepairs(iterator):
@@ -20,11 +20,17 @@ def takeconjoinedpairs(iterator):
 CHILD, SIBLING, PARENT, KEY = 0, 1, 2, 3
 
 class PairingHeap(object):
-    def __init__(self, backend=None, cmp=cmp):
-        self.nodes = yaupon.ydict(backend=backend)
+    def __init__(self, backend=None, items=None, keys=None, cmp=cmp):
+        self.nodes = ydict(backend=backend)
         # 'nodes' maps item -> [child, sibling, parent, key] 
         self.cmp = cmp
         self.head = None
+        if items is not None:
+            for item in items:
+                self.insert(item)
+        if keys is not None:
+            for item, key in keys.iteritems():
+                self.insert(item, key)
 
     def __initialize(self, item, key=None):
         if key is None:
@@ -43,13 +49,14 @@ class PairingHeap(object):
             x = self.nodes[x][SIBLING]
     
     def __link(self, x, y):
+        if x is None: return y
+        if y is None: return x
         xrec, yrec = self.nodes[x], self.nodes[y]
         if self.cmp(xrec[KEY], yrec[KEY]) > 0:
             x, y, xrec, yrec = y, x, yrec, xrec
-        if xrec[CHILD] is None:
-            yrec[PARENT] = x
+        yrec[PARENT] = x if xrec[CHILD] is None else None
         yrec[SIBLING] = xrec[CHILD]
-        xrec[CHILD] = y
+        xrec[CHILD], xrec[SIBLING] = y, None
         self.nodes[x], self.nodes[y] = xrec, yrec
         return x
 
@@ -67,20 +74,21 @@ class PairingHeap(object):
         return self.nodes[self.head][KEY]
 
     def deletemin(self):
-         old_head = self.head
-        to_merge = yaupon.ydeque(backend=self.nodes)
-        for first, second in takepairs(self.__getchildren(old_head)):
+        old_head = self.head
+        to_merge = ydeque(backend=self.nodes,
+                          iterable=takepairs(self.__getchildren(old_head)))
+        to_merge_final = ydeque(backend=self.nodes)
+        for first, second in to_merge:
             if second is None:
-                to_merge.append(first)
+                to_merge_final.append(first)
                 continue
-            to_merge.append(self.__link(first, second))
+            to_merge_final.append(self.__link(first, second))
+
         #TODO: implement __reversed__ for sqlitedeque
-        if not to_merge:
-            new_head = None
-        else:
-            new_head = to_merge[0]
-            for first, second in takeconjoinedpairs(reversed(to_merge)):
-                new_head = self.__link(first, second)
+        new_head = None
+        for item in reversed(to_merge_final):
+            new_head = self.__link(item, new_head)
+
         # Replace self.head
         self.head = new_head
         del self.nodes[old_head]
@@ -120,8 +128,16 @@ class PairingHeap(object):
         self.head = self.__link(self.head, item)
 
     def getkey(self, item):
-        return self.nodes[item][KEY]
+        rec = self.nodes.get(item)
+        if rec is None:
+            return None
+        return rec[KEY]
 
     def __contains__(self, item):
         return item in self.nodes
             
+    def __len__(self):
+        return len(self.nodes)
+        
+    def __iter__(self):
+        return self.nodes.iterkeys()

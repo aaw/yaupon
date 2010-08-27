@@ -123,7 +123,8 @@ def test_exhaustive_all_pairs(graph):
 
 def test_negative_weight_cycle(graph):
     populate_test_graph(graph)
-    # (10,11) is on a cycle, so making its weight small enough makes the cycle's weight negative
+    # (10,11) is on a cycle, so making its weight small enough makes the 
+    # cycle's weight negative
 
     # -2 isn't small enough, just makes the cycle weight 0
     for edge in graph.edges(source=10, target=11):
@@ -135,8 +136,11 @@ def test_negative_weight_cycle(graph):
     for edge in graph.edges(source=10, target=11):
         graph.edge_weight[edge] = -3
     shortest_path.compile(graph=graph, edge_weight=graph.edge_weight, source=5)
-    py.test.raises(NegativeCycleError, """
-                                       all_pairs = shortest_path.compile(graph=graph, 
-                                                                         edge_weight=graph.edge_weight,
-                                                                         source=1)
-                                       """)
+    py.test.raises(NegativeCycleError, 
+                   """
+                   shortest_path.compile(graph=graph, 
+                                         edge_weight=graph.edge_weight,
+                                         source=1)
+                   """)
+
+

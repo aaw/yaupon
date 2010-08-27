@@ -10,8 +10,8 @@ def ysorted(backend, *args, **kwargs):
     return getbackend(backend).sorted(*args, **kwargs)
 
 def yheap(backend, *args, **kwargs):
-    import yaupon.data_structures.dheap as dheap
-    return dheap.DHeap(getbackend(backend), *args, **kwargs)
+    import yaupon.data_structures.pairing_heaps as pairing_heaps
+    return pairing_heaps.PairingHeap(getbackend(backend), *args, **kwargs)
 
 def yunion_find(backend, *args, **kwargs):
     import yaupon.data_structures.union_find as union_find

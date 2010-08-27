@@ -19,14 +19,14 @@ class DHeap(object):
                  items=None,
                  d=3,
                  cmp=cmp,
-                 key=None):
+                 keys=None):
         self.__backend = backend
         self.__d = d
         self.cmp = cmp
         self.key = ydict(backend=self.__backend)
         self.__heap_index = ydict(backend=self.__backend)
-        if key is not None:
-            for k,v in key.iteritems():
+        if keys is not None:
+            for k,v in keys.iteritems():
                 self.key[k] = v
         self.__heap = ydeque(backend=self.__backend)
         if items is not None:
@@ -134,7 +134,7 @@ class DHeap(object):
         """
         item = self.findmin()
         if item is None:
-            raise IndexError, 'delete from empty heap'
+            raise StandardError, 'delete from empty heap'
         self.__delete(item, 0)
         return item
     

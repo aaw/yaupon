@@ -8,6 +8,8 @@ import yaupon.graph_impl.dictgraph as dictgraph
 import yaupon.graph_impl.sqlitegraph as sqlitegraph
 import yaupon.graph_impl.forest as forest
 import yaupon.graph_impl.exceptions as exceptions
+import yaupon.data_structures.dheap as dheap
+import yaupon.data_structures.pairing_heaps as pairing_heaps
 import yaupon.io.ygp
 
 class TempFile(object):
@@ -52,19 +54,16 @@ def pytest_generate_tests(metafunc):
         metafunc.addcall(funcargs = { 'graph' : sqlite_memory_g })
         metafunc.addcall(funcargs = { 'graph' : sqlite_tempfile_g })
         metafunc.addcall(funcargs = { 'graph' : sqlite_tempfile_vcache_g })
-    elif "forest" in metafunc.funcargnames:
-        f = forest.Forest()
-        metafunc.addcall(funcargs = { 'forest' : f })
-    elif "graph_type" in metafunc.funcargnames:
+    if "forest" in metafunc.funcargnames:
+        metafunc.addcall(funcargs = { 'forest' : forest.Forest() })
+    if "graph_type" in metafunc.funcargnames:
         metafunc.addcall(funcargs = { 'graph_type' : dictgraph.DictGraph })
         metafunc.addcall(funcargs = { 'graph_type' : sqlitegraph.SQLiteGraph })
-    elif "forest_type" in metafunc.funcargnames:
+    if "forest_type" in metafunc.funcargnames:
         metafunc.addcall(funcargs = { 'forest_type' : forest.Forest })
-    elif "backend" in metafunc.funcargnames:
+    if "backend" in metafunc.funcargnames:
         metafunc.addcall(funcargs = { 'backend' : backend.BackendCore() })
-        conn = sqlite3.connect('')
-        metafunc.addcall(funcargs = 
-                         { 'backend' : backend.BackendSQLite(conn=conn) })
+        metafunc.addcall(funcargs = { 'backend' : backend.BackendSQLite() })
 
 """
 import this function in data driven tests and wrap it to iterate over
