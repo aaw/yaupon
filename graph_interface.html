@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>yaupon’s Graph Interface &mdash; yaupon v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="yaupon v0.1 documentation" href="index.html" />
+    <link rel="next" title="yaupon’s Forest Interface" href="forest_interface.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="forest_interface.html" title="yaupon’s Forest Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">yaupon&#8217;s Graph Interface</a><ul>
+<li><a class="reference external" href="#adding-vertices">Adding vertices</a></li>
+<li><a class="reference external" href="#iterating-over-vertices">Iterating over vertices</a></li>
+<li><a class="reference external" href="#adding-edges">Adding edges</a></li>
+<li><a class="reference external" href="#iterating-over-edges">Iterating over edges</a></li>
+<li><a class="reference external" href="#removing-vertices">Removing vertices</a></li>
+<li><a class="reference external" href="#removing-edges">Removing edges</a></li>
+<li><a class="reference external" href="#properties">Properties</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="examples.html"
+                                  title="previous chapter">Examples</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="forest_interface.html"
+                                  title="next chapter">yaupon&#8217;s Forest Interface</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/graph_interface.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="yaupon-s-graph-interface">
+<h1>yaupon&#8217;s Graph Interface<a class="headerlink" href="#yaupon-s-graph-interface" title="Permalink to this headline">¶</a></h1>
+<p>yaupon&#8217;s graph interface makes a distinction between three main concepts:
+vertices, edges, and properties.</p>
+<p>yaupon&#8217;s graph interface makes no explicit distinction between directed and
+undirected graphs. Each edge must specify a &#8220;source&#8221; and &#8220;target&#8221; vertex and
+graphs allow iteration over edges by specifying a source, a target, or both a
+source and target.</p>
+<p>The vertices of a graph are a set of any hashable, comparable Python objects.</p>
+<div class="section" id="adding-vertices">
+<h2>Adding vertices<a class="headerlink" href="#adding-vertices" title="Permalink to this headline">¶</a></h2>
+<p>Vertices can be added to a graph in one of two ways: either by passing a
+sequence of vertices at construction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>or by calling the <em>add_vertex</em> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">)</span>
+<span class="go">&#39;d&#39;</span>
+</pre></div>
+</div>
+<p><em>add_vertex</em> can also be called without an argument, in which case the graph
+is responsible for generating some unique handle for the new vertex:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">()</span>
+<span class="go">UUID(&#39;ee2d7e1f-a0a6-42e2-abaf-665a6a377f49&#39;)</span>
+</pre></div>
+</div>
+<p>In either case, <em>add_vertex</em> returns the vertex that was just added. If
+<em>add_vertex</em> is called on a vertex that already exists in the graph, the
+existing vertex is returned:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
+<span class="go">&#39;X&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
+<span class="go">&#39;X&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="iterating-over-vertices">
+<h2>Iterating over vertices<a class="headerlink" href="#iterating-over-vertices" title="Permalink to this headline">¶</a></h2>
+<p>The <em>vertices</em> method returns an iterator over the vertices in a graph:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+<span class="go">&#39;c&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">vertices</span><span class="p">()]</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-edges">
+<h2>Adding edges<a class="headerlink" href="#adding-edges" title="Permalink to this headline">¶</a></h2>
+<p>Edges can be added to a graph in one of two ways: either by passing a sequence
+of edges to the graph constructor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;BOS&#39;</span><span class="p">,</span> <span class="s">&#39;LGA&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;LGA&#39;</span><span class="p">,</span> <span class="s">&#39;ORD&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>or by calling the <em>add_edge</em> method.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;BOS&#39;</span><span class="p">,</span> <span class="s">&#39;LGA&#39;</span><span class="p">)</span>
+<span class="go">(&#39;BOS&#39;, &#39;LGA&#39;)</span>
+</pre></div>
+</div>
+<p>In either case, pairs of vertices, not edges, are passed to the graph and the
+graph creates the actual edge objects. <em>add_edge</em> returns the edge object
+created. You can alter the type that the graph uses to construct the edge
+by setting the <em>graph.EdgeType</em> parameter (TODO: this should just be a
+constructor parameter).
+The vertices in the edge will be added to the vertex set if necessary, so
+the call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>has the same effect as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">g</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Edges with the same source and target (loops) are allowed. Edges with the same
+source and target as another edge in the graph (multi-edges) may be allowed
+if the graph chooses to support multi-edges. All of</p>
+</div>
+<div class="section" id="iterating-over-edges">
+<h2>Iterating over edges<a class="headerlink" href="#iterating-over-edges" title="Permalink to this headline">¶</a></h2>
+<p>The <em>edges</em> method returns an iterator over edges in the graph:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">)</span>
+<span class="go">(&#39;c&#39;, &#39;d&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+<span class="go">[(&#39;a&#39;, &#39;b&#39;), (&#39;c&#39;, &#39;d&#39;)]</span>
+</pre></div>
+</div>
+<p><em>edges</em> also accepts two optional named arguments: <em>source</em> and <em>target</em>,
+which allow you to iterate over edges by filtering on a particular source
+or target:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span> <span class="mf">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span> <span class="mf">3</span><span class="p">),</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span> <span class="mf">3</span><span class="p">),</span> <span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="mf">2</span><span class="p">),</span> <span class="p">(</span><span class="mf">4</span><span class="p">,</span> <span class="mf">2</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="mf">0</span><span class="p">)]</span>
+<span class="go">[(0, 1), (0, 2)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="mf">2</span><span class="p">)]</span>
+<span class="go">[(0, 2), (4, 2)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="mf">2</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="mf">3</span><span class="p">)]</span>
+<span class="go">[(2, 3), (2, 3)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="s">&#39;a&#39;</span><span class="p">)]</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="removing-vertices">
+<h2>Removing vertices<a class="headerlink" href="#removing-vertices" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="removing-edges">
+<h2>Removing edges<a class="headerlink" href="#removing-edges" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="properties">
+<h2>Properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h2>
+<p><em>Properties</em> are mappings from vertices or edges to Python objects. Storage
+and management of properties is provided by the graph implementation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),(</span><span class="mf">2</span><span class="p">,</span><span class="mf">3</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;vertex_color&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">vertex_color</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">vertex_color</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;blue&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;edge_weight&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span><span class="p">,</span><span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">edge_weight</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">edge_weight</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.22</span>
+</pre></div>
+</div>
+<p>Properties implement a subset of the Python dict interface - just the index
+operator ([]) that allows getting and setting, and the &#8220;get&#8221; method.</p>
+<p>Properties are considered part of the graph and are serialized along with
+vertices and edges by ygp. <em>add_property</em> with a string argument causes
+a new property to be created and associated with the graph:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">),(</span><span class="s">&#39;c&#39;</span><span class="p">,</span><span class="s">&#39;d&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;vertex_weight&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The property is then accessible as an object property:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">vertex_weight</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">vertex_weight</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3</span>
+</pre></div>
+</div>
+<p>You can access a dictionary that maps property names to properties by calling
+<em>properties</em>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">properties</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">[&#39;vertex_weight&#39;]</span>
+</pre></div>
+</div>
+<p>Finally, you can remove a property from a graph by calling <em>remove_property</em>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">remove_property</span><span class="p">(</span><span class="s">&#39;vertex_weight&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">properties</span><span class="p">()</span>
+<span class="go">{}</span>
+</pre></div>
+</div>
+<p>Nothing distinguishes vertex properties from edge properties. We recommend the
+convention of prefixing vertex properties with &#8220;vertex_&#8221; and edge properties
+with &#8220;edge_&#8221;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="forest_interface.html" title="yaupon’s Forest Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             >previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Aaron Windsor.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

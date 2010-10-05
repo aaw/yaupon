@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Depth-first traversal generator &mdash; yaupon v0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="yaupon v0.1 documentation" href="../index.html" />
+    <link rel="up" title="Traversals" href="../traversals.html" />
+    <link rel="next" title="Breadth-first traversal generator" href="breadth_first_generator.html" />
+    <link rel="prev" title="Traversals" href="../traversals.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="breadth_first_generator.html" title="Breadth-first traversal generator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../traversals.html" title="Traversals"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">yaupon v0.1 documentation</a> &raquo;</li>
+          <li><a href="../traversals.html" accesskey="U">Traversals</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Depth-first traversal generator</a><ul>
+<li><a class="reference external" href="#events-generated">Events generated</a></li>
+<li><a class="reference external" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../traversals.html"
+                                  title="previous chapter">Traversals</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="breadth_first_generator.html"
+                                  title="next chapter">Breadth-first traversal generator</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/traversals/depth_first_generator.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="depth-first-traversal-generator">
+<h1>Depth-first traversal generator<a class="headerlink" href="#depth-first-traversal-generator" title="Permalink to this headline">¶</a></h1>
+<p>A depth-first traversal generator generates events for a
+<a class="reference external" href="../glossary.html#term-depth-first-traversal"><em class="xref">depth-first traversal</em></a>, which always extends a path as far as
+possible before backtracking.</p>
+<div class="section" id="events-generated">
+<h2>Events generated<a class="headerlink" href="#events-generated" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">yaupon.traversal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),(</span><span class="mf">1</span><span class="p">,</span><span class="mf">2</span><span class="p">),(</span><span class="mf">2</span><span class="p">,</span><span class="mf">3</span><span class="p">),(</span><span class="mf">0</span><span class="p">,</span><span class="mf">4</span><span class="p">),(</span><span class="mf">4</span><span class="p">,</span><span class="mf">5</span><span class="p">),(</span><span class="mf">5</span><span class="p">,</span><span class="mf">3</span><span class="p">),(</span><span class="mf">0</span><span class="p">,</span><span class="mf">6</span><span class="p">),(</span><span class="mf">6</span><span class="p">,</span><span class="mf">7</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="n">depth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (0,6), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (6,7), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 7, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 6, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (0,4), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (4,5), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (5,3), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 3, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 5, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 4, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (0,1), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (1,2), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;FINISHED&#39;, &#39;edge&#39;: (2,3), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;DISCOVERED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 2, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 1, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 0, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="breadth_first_generator.html" title="Breadth-first traversal generator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../traversals.html" title="Traversals"
+             >previous</a> |</li>
+        <li><a href="../index.html">yaupon v0.1 documentation</a> &raquo;</li>
+          <li><a href="../traversals.html" >Traversals</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Aaron Windsor.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

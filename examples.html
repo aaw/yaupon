@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Examples &mdash; yaupon v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="yaupon v0.1 documentation" href="index.html" />
+    <link rel="next" title="yaupon’s Graph Interface" href="graph_interface.html" />
+    <link rel="prev" title="Quick start" href="intro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="graph_interface.html" title="yaupon’s Graph Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Quick start"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Examples</a><ul>
+<li><a class="reference external" href="#sorting-vertices-by-dependency">Sorting vertices by dependency</a></li>
+<li><a class="reference external" href="#drawing-a-graph">Drawing a graph</a></li>
+<li><a class="reference external" href="#solving-a-tile-puzzle">Solving a tile puzzle</a></li>
+<li><a class="reference external" href="#a-simple-diff-implementation">A simple diff implementation</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="intro.html"
+                                  title="previous chapter">Quick start</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="graph_interface.html"
+                                  title="next chapter">yaupon&#8217;s Graph Interface</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/examples.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="sorting-vertices-by-dependency">
+<h2>Sorting vertices by dependency<a class="headerlink" href="#sorting-vertices-by-dependency" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="drawing-a-graph">
+<h2>Drawing a graph<a class="headerlink" href="#drawing-a-graph" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="solving-a-tile-puzzle">
+<h2>Solving a tile puzzle<a class="headerlink" href="#solving-a-tile-puzzle" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="a-simple-diff-implementation">
+<h2>A simple diff implementation<a class="headerlink" href="#a-simple-diff-implementation" title="Permalink to this headline">¶</a></h2>
+<p>The output of a <a class="reference external" href="http://en.wikipedia.org/wiki/Diff">diff</a> between two files is the shortest sequence of
+additions and deletions of lines of one file that would transform it
+into the other. For example, given the file:</p>
+<div class="highlight-python"><pre>yaupon is a graph library
+written in python
+designed to be easy to learn</pre>
+</div>
+<p>and the file:</p>
+<div class="highlight-python"><pre>yaupon is a graph library
+written entirely in python
+designed to be easy to learn
+and fun to use</pre>
+</div>
+<p>a diff between the first and second file would tell you to replace the
+line &#8220;written in python&#8221; with &#8220;written entirely in python&#8221; and to append
+the line &#8220;and fun to use&#8221; to the end of the file.</p>
+<p>In this section, we&#8217;ll describe an algorithm for creating a diff
+between two strings of text; the implementation is straightforward
+to generalize to the more familiar diff implementation that operates
+at the level of comparing entire lines in two files.</p>
+<p>Let&#8217;s set up the description of the algorithm with an example:
+diffing the strings <em>bananas</em> and <em>cabana</em>. We&#8217;ll start by drawing out
+a two-dimensional grid, labelling the top horizontal axis with
+bananas and the left vertical axis with cabana:</p>
+<div class="highlight-python"><pre>      b   a   n   a   n   a   s
+  +---+---+---+---+---+---+---+
+  |   |   |   |   |   |   |   |
+c +---+---+---+---+---+---+---+
+  |   | \ |   |   |   |   |   |
+a +---+---+---+---+---+---+---+
+  |   |   |   |   |   |   |   |
+b +---+---+---+---+---+---+---+
+  |   |   |   | \ |   |   |   |
+a +---+---+---+---+---+---+---+
+  |   |   |   |   | \ |   |   |
+n +---+---+---+---+---+---+---+
+  |   |   |   |   |   | \ |   |
+a +---+---+---+---+---+---+---+</pre>
+</div>
+<p>A path in the above diagram from the upper left corner to the bottom
+right corner defines a transformation from one string to the other: if
+we assume that we&#8217;re transforming bananas into cabana, we can read any
+path from upper left corner to the bottom right corner and interpret
+each horizontal edge as the operation &#8220;add the sx</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="graph_interface.html" title="yaupon’s Graph Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Quick start"
+             >previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Aaron Windsor.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

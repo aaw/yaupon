@@ -1,0 +1,377 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Traversals &mdash; yaupon v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="yaupon v0.1 documentation" href="index.html" />
+    <link rel="next" title="Depth-first traversal generator" href="traversals/depth_first_generator.html" />
+    <link rel="prev" title="Backends" href="backends.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="traversals/depth_first_generator.html" title="Depth-first traversal generator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="backends.html" title="Backends"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Traversals</a><ul>
+<li><a class="reference external" href="#examples">Examples</a></li>
+<li><a class="reference external" href="#initial-vertex-sequence">Initial vertex sequence</a></li>
+<li><a class="reference external" href="#traversal-generator">Traversal Generator</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#traversal-visitor">Traversal Visitor</a><ul>
+<li><a class="reference external" href="#defining-a-custom-visitor">Defining a custom visitor</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="backends.html"
+                                  title="previous chapter">Backends</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="traversals/depth_first_generator.html"
+                                  title="next chapter">Depth-first traversal generator</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/traversals.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="traversals">
+<h1>Traversals<a class="headerlink" href="#traversals" title="Permalink to this headline">¶</a></h1>
+<p>A traversal is a systematic exploration of all vertices and edges in a graph.
+Traversals keep track of the vertices and edges have been explored previously
+and use this information to iteratively expand the
+<a class="reference external" href="glossary.html#term-traversal-frontier"><em class="xref">traversal frontier</em></a>. Traversals differ by the
+rules they use to choose a vertex or edge for exploration from among those on
+the traversal frontier.</p>
+<p>Building a traversal with yaupon involves calling yaupon&#8217;s <tt class="docutils literal"><span class="pre">traverse</span></tt>
+function with the following three arguments:</p>
+<blockquote>
+<ul class="simple">
+<li>An <a class="reference internal" href="#initial-vertex-sequence"><em>Initial vertex sequence</em></a>, used by the traversal to
+bootstrap its discovery of the graph. Whenever the traversal has completely
+explored the portion of the graph reachable from an initial vertex, it
+pulls another vertex from this sequence and attempts to expand the traversal
+frontier from that vertex.</li>
+<li>A <a class="reference internal" href="#traversal-generator"><em>Traversal Generator</em></a>, which generates an sequence of vertices and
+edges of the graph as they are encountered, annotated with information
+about the state of a vertex or edge with respect to the traversal.</li>
+<li>A <a class="reference internal" href="#traversal-visitor"><em>Traversal Visitor</em></a>, which  collects information about the graph as
+it&#8217;s explored, for example, the discover time of each vertex, the depth of
+each vertex in the traversal tree, or the parent edge of each vertex in the
+traversal tree.</li>
+</ul>
+</blockquote>
+<p>The <tt class="docutils literal"><span class="pre">traverse</span></tt> function feeds a generator with vertices from the sequence of
+initial vertices. The generator expands as much of the graph as it can from
+each of these vertices in turn, and the traversal examines state information
+returned from the generator and translates that information into calls on
+the traversal visitor.</p>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>To start off, let&#8217;s run a depth-first search on a graph that simply prints
+out all of the vertices reachable from a particular vertex in the order they&#8217;re
+discovered. First, we create a visitor, which we&#8217;ll derive from the base
+class <tt class="docutils literal"><span class="pre">TraversalVisitor</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">yaupon.traversal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Visitor</span><span class="p">(</span><span class="n">TraversalVisitor</span><span class="p">):</span>
+<span class="go">        def discover_vertex(self, vertex):</span>
+<span class="go">            print vertex,</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">TraversalVisitor</span></tt> has all visitor event points defined as no-ops - here
+we&#8217;ve overridden exactly one event point, <tt class="docutils literal"><span class="pre">discover_vertex</span></tt>, which will be
+called on each vertex in the graph as they&#8217;re discovered. Next, we&#8217;ll create
+graph that has two <a class="reference external" href="glossary.html#term-connected-component"><em class="xref">components</em></a>: the
+<a class="reference external" href="glossary.html#term-path"><em class="xref">path</em></a> <tt class="docutils literal"><span class="pre">(0,1),</span> <span class="pre">(1,2),</span> <span class="pre">(2,3)</span></tt> and the <a class="reference external" href="glossary.html#term-cycle"><em class="xref">cycle</em></a> <tt class="docutils literal"><span class="pre">(4,5),</span> <span class="pre">(5,6),</span>
+<span class="pre">(6,4)</span></tt>. Neither component is reachable from the other:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),(</span><span class="mf">1</span><span class="p">,</span><span class="mf">2</span><span class="p">),(</span><span class="mf">2</span><span class="p">,</span><span class="mf">3</span><span class="p">),(</span><span class="mf">4</span><span class="p">,</span><span class="mf">5</span><span class="p">),(</span><span class="mf">5</span><span class="p">,</span><span class="mf">6</span><span class="p">),(</span><span class="mf">6</span><span class="p">,</span><span class="mf">4</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>Now we call <tt class="docutils literal"><span class="pre">traverse</span></tt>, passing <tt class="docutils literal"><span class="pre">[0]</span></tt> as the sequence of initial
+vertices, an instance of <tt class="docutils literal"><span class="pre">Visitor</span></tt> as our visitor, and a depth-first
+traversal generator to see all of the vertices in the component containing
+vertex <tt class="docutils literal"><span class="pre">0</span></tt> printed to the console:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">traverse</span><span class="p">([</span><span class="mf">0</span><span class="p">],</span> <span class="n">Visitor</span><span class="p">(),</span> <span class="n">depth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="go">0 1 2 3</span>
+</pre></div>
+</div>
+<p>Of course, we could just as easily print out all vertices in the other
+component by starting with a different initial vertex sequence:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">traverse</span><span class="p">([</span><span class="mf">5</span><span class="p">],</span> <span class="n">Visitor</span><span class="p">(),</span> <span class="n">depth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="go">5 6 4</span>
+</pre></div>
+</div>
+<p>Or print all of the vertices in the graph by using <tt class="docutils literal"><span class="pre">g.vertices()</span></tt> as
+the sequence of initial vertices:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">traverse</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">vertices</span><span class="p">(),</span> <span class="n">Visitor</span><span class="p">(),</span> <span class="n">depth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="go">0 1 2 3 4 5 6</span>
+</pre></div>
+</div>
+<p>While you can always define your own traversal visitor as we did above,
+yaupon comes with a few predefined visitors that can be used to accomplish
+common traversal tasks such as timestamping vertices in the order they were
+discovered or storing the edge through which a vertex was discovered.
+These visitors can be combined using the class <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> to
+collect several traversal properties. In the example below, we use an
+<tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> to record the <tt class="docutils literal"><span class="pre">ParentEdge</span></tt> of each vertex (the edge
+it was discovered through), the <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt> of each vertex, and the
+<tt class="docutils literal"><span class="pre">Depth</span></tt> of each vertex (the length of the path from a root to the given
+vertex in the forest defined by <tt class="docutils literal"><span class="pre">ParentEdge</span></tt>.):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">yaupon.traversal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">1</span><span class="p">,</span><span class="mf">2</span><span class="p">),</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span><span class="mf">3</span><span class="p">),</span> <span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="mf">4</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visitor</span> <span class="o">=</span> <span class="n">AggregateVisitor</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">visitors</span><span class="o">=</span><span class="p">[</span><span class="n">ParentEdge</span><span class="p">,</span> <span class="n">DiscoverTime</span><span class="p">,</span> <span class="n">Depth</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">traverse</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">vertices</span><span class="p">(),</span> <span class="n">visitor</span><span class="p">,</span> <span class="n">depth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visitor</span><span class="o">.</span><span class="n">ParentEdge</span>
+<span class="go">{0: None, 1: (0,1), 2: (1,2), 3: (2,3), 4: (0,4)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visitor</span><span class="o">.</span><span class="n">DiscoverTime</span>
+<span class="go">{0: 0, 1: 2, 2: 3, 3: 4, 4: 1}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visitor</span><span class="o">.</span><span class="n">Depth</span>
+<span class="go">{0: 0, 1: 1, 2: 2, 3: 3, 4: 1}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initial-vertex-sequence">
+<span id="id1"></span><h2>Initial vertex sequence<a class="headerlink" href="#initial-vertex-sequence" title="Permalink to this headline">¶</a></h2>
+<p>The initial vertex sequence lets you control which parts of the graph are
+explored by specifying which vertices the traversal can be started from.
+Supplying an iterator over all vertices in the graph guarantees that the
+entire graph is explored.
+If the graph is <a class="reference external" href="glossary.html#term-strongly-connected"><em class="xref">strongly connected</em></a>, you only need to supply a
+single vertex as the initial vertex sequence.</p>
+</div>
+<div class="section" id="traversal-generator">
+<span id="id2"></span><h2>Traversal Generator<a class="headerlink" href="#traversal-generator" title="Permalink to this headline">¶</a></h2>
+<p>A traversal generator keeps track of the <a class="reference external" href="glossary.html#term-traversal-frontier"><em class="xref">traversal frontier</em></a>
+and uses this information to iteratively generate the
+next vertex to be explored by the traversal. yaupon comes with several
+generator implementations:</p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="traversals/depth_first_generator.html">Depth-first traversal generator</a></li>
+<li class="toctree-l1"><a class="reference external" href="traversals/breadth_first_generator.html">Breadth-first traversal generator</a></li>
+<li class="toctree-l1"><a class="reference external" href="traversals/best_first_generator.html">Best-first traversal generator</a></li>
+<li class="toctree-l1"><a class="reference external" href="traversals/uniform_cost_generator.html">Uniform cost traversal generator</a></li>
+<li class="toctree-l1"><a class="reference external" href="traversals/a_star_generator.html">A* traversal generator</a></li>
+</ul>
+<p>You can also write your own traversal generator. A traversal generator is
+any class that exposes the two methods
+<tt class="docutils literal"><span class="pre">bootstrap(vertex)</span></tt> and <tt class="docutils literal"><span class="pre">events()</span></tt>. <tt class="docutils literal"><span class="pre">bootstrap(vertex)</span></tt> adds a
+vertex to the traversal frontier and <tt class="docutils literal"><span class="pre">events()</span></tt> yields
+vertex and edge events, iteratively expanding the frontier until
+it&#8217;s empty.</p>
+<p>The vertex and edge events returned by <tt class="docutils literal"><span class="pre">events()</span></tt> are just
+python <tt class="docutils literal"><span class="pre">dict</span></tt> s. To get a feel for what these look like, we can use a
+<tt class="docutils literal"><span class="pre">breadth_first_generator</span></tt> directly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yaupon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">yaupon.traversal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">yaupon</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),(</span><span class="mf">1</span><span class="p">,</span><span class="mf">2</span><span class="p">),(</span><span class="mf">1</span><span class="p">,</span><span class="mf">3</span><span class="p">),(</span><span class="mf">2</span><span class="p">,</span><span class="mf">4</span><span class="p">),(</span><span class="mf">3</span><span class="p">,</span><span class="mf">5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="n">breadth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">{&#39;vertex&#39;: 0, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (0,1), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 1, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (1,2), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (1,3), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 2, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (2,4), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 3, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (3,5), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 4, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 5, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">bootstrap</span></tt> returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if the vertex passed as an argument is one
+that hasn&#8217;t yet been seen by the traversal and <tt class="xref docutils literal"><span class="pre">False</span></tt> otherwise. In the
+example above, we started with a vertex (<tt class="docutils literal"><span class="pre">0</span></tt>) that could reach all other
+vertices in the graph. But we could have just as easily started anywhere
+else in the graph as long as we bootstrap appropriately:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="n">breadth_first_generator</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">event</span>
+<span class="gp">...</span>
+<span class="go">{&#39;vertex&#39;: 2, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (2,4), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 4, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">4</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">event</span>
+<span class="gp">...</span>
+<span class="go">{&#39;vertex&#39;: 1, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;FINISHED&#39;, &#39;edge&#39;: (1,2), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (1,3), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 3, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;UNDISCOVERED&#39;, &#39;edge&#39;: (3,5), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="go">{&#39;vertex&#39;: 5, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="mf">0</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">event</span>
+<span class="gp">...</span>
+<span class="go">{&#39;vertex&#39;: 0, &#39;state&#39;: &#39;FINISHED&#39;, &#39;type&#39;: &#39;VERTEX&#39;}</span>
+<span class="go">{&#39;target_state&#39;: &#39;FINISHED&#39;, &#39;edge&#39;: (0,1), &#39;type&#39;: &#39;EDGE&#39;, &#39;source_state&#39;: &#39;FINISHED&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">any</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">vertices</span><span class="p">())</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>As you can see from the examples above, you can run a lightweight traversal
+using just a generator if you know how to interpret the events returned. A
+full traversal, including hooking in a <a class="reference internal" href="#traversal-visitor"><em>Traversal Visitor</em></a>, is a more
+robust solution if you want to switch out different generators in your
+traversal or aggregate several visitor computations together.</p>
+</div>
+<div class="section" id="traversal-visitor">
+<span id="id3"></span><h2>Traversal Visitor<a class="headerlink" href="#traversal-visitor" title="Permalink to this headline">¶</a></h2>
+<p>Visitors collect information from a traversal. Common visitors such as those
+that record the discovery timestamp of vertices and edges, the depth of the
+discovery, the parent vertices or edges in the <a class="reference external" href="glossary.html#term-traversal-tree"><em class="xref">traversal tree</em></a> and
+more are
+defined by yaupon for use in yaupon&#8217;s <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> class. Unless you
+have a particular need that isn&#8217;t met by <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt>, you shouldn&#8217;t
+need to define your own visitors (but see <a class="reference internal" href="#defining-a-custom-visitor"><em>Defining a custom visitor</em></a>
+below if you need to.)</p>
+<p>Pre-defined visitors that can be used with <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> include:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">DiscoverTime</span></tt>: computes the unique, 0-indexed timestep at which each vertex was discovered</li>
+<li><tt class="docutils literal"><span class="pre">Depth</span></tt>: computes the length of the unique path to the root of in the <a class="reference external" href="glossary.html#term-traversal-tree"><em class="xref">traversal tree</em></a></li>
+<li><tt class="docutils literal"><span class="pre">Parent</span></tt>: computes the parent vertex in the <a class="reference external" href="glossary.html#term-traversal-tree"><em class="xref">traversal tree</em></a> for each vertex, or <tt class="xref docutils literal"><span class="pre">None</span></tt> for the root of the traversal tree.</li>
+<li><tt class="docutils literal"><span class="pre">ParentEdge</span></tt>: computes the parent edge in the <a class="reference external" href="glossary.html#term-traversal-tree"><em class="xref">traversal tree</em></a> for each vertex, or <tt class="xref docutils literal"><span class="pre">None</span></tt> for the root of the traversal tree.</li>
+<li><tt class="docutils literal"><span class="pre">LowPoint</span></tt>: computes the low point of each vertex, a value important in the depth-first search-based computation of <a class="reference external" href="glossary.html#term-articulation-point"><em class="xref">articulation points</em></a>.</li>
+<li><tt class="docutils literal"><span class="pre">LeastAncestor</span></tt>: computes, for any vertex v, the minimum <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt> of a vertex u attached to v through a <a class="reference external" href="glossary.html#term-back-edge"><em class="xref">back edge</em></a> <tt class="docutils literal"><span class="pre">(u,v)</span></tt> or a <a class="reference external" href="glossary.html#term-tree-edge"><em class="xref">tree edge</em></a> <tt class="docutils literal"><span class="pre">(u,v)</span></tt>. If no such vertex u exists, <tt class="docutils literal"><span class="pre">LeastAncestor</span></tt> returns v&#8217;s <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt>.</li>
+</ul>
+</blockquote>
+<p><tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> is aware of and respects dependencies between visitors.
+<tt class="docutils literal"><span class="pre">LowPoint</span></tt> and <tt class="docutils literal"><span class="pre">LeastAncestor</span></tt>, for example, both depend on the computation
+that <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt> knows how to perform, but <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt> computes
+all three quantities in one pass over the graph by adding a <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt>
+visitor to the computation if you haven&#8217;t already specified one but have
+added a <tt class="docutils literal"><span class="pre">LowPoint</span></tt> or <tt class="docutils literal"><span class="pre">LeastAncestor</span></tt> visitor to the <tt class="docutils literal"><span class="pre">AggregateVisitor</span></tt>,
+and scheduling the computation of <tt class="docutils literal"><span class="pre">DiscoverTime</span></tt> ahead of either of the
+other visitors at each event point along the traversal.</p>
+<div class="section" id="defining-a-custom-visitor">
+<span id="id4"></span><h3>Defining a custom visitor<a class="headerlink" href="#defining-a-custom-visitor" title="Permalink to this headline">¶</a></h3>
+<p>You can define your own custom visitor, by implementing the visitor
+interface. The complete visitor interface is defined by the
+<tt class="docutils literal"><span class="pre">TraversalVisitor</span></tt> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">TraversalVisitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">start_traversal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">discover_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">finish_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">tree_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">back_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">forward_or_cross_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Some of the methods in <tt class="docutils literal"><span class="pre">TraversalVisitor</span></tt> aren&#8217;t strictly necessary,
+depending on what kind of traversal generator you use. <tt class="docutils literal"><span class="pre">back_edge</span></tt>,
+for example, is called on each <a class="reference external" href="glossary.html#term-back-edge"><em class="xref">back edge</em></a>, which means it isn&#8217;t
+needed with a <a class="reference external" href="glossary.html#term-breadth-first-traversal"><em class="xref">breadth-first traversal</em></a> generator because
+breadth first traversals don&#8217;t have back edges by definition.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="traversals/depth_first_generator.html" title="Depth-first traversal generator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="backends.html" title="Backends"
+             >previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Aaron Windsor.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

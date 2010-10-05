@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Backends &mdash; yaupon v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="yaupon v0.1 documentation" href="index.html" />
+    <link rel="next" title="Traversals" href="traversals.html" />
+    <link rel="prev" title="Graph Adapters" href="adapters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="traversals.html" title="Traversals"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="adapters.html" title="Graph Adapters"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Backends</a><ul>
+<li><a class="reference external" href="#the-backend-protocol">The backend protocol</a></li>
+<li><a class="reference external" href="#beyond-dicts-deques-and-sorting">Beyond dicts, deques, and sorting</a></li>
+<li><a class="reference external" href="#a-word-of-caution">A word of caution</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="adapters.html"
+                                  title="previous chapter">Graph Adapters</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="traversals.html"
+                                  title="next chapter">Traversals</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/backends.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="backends">
+<h1>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h1>
+<p>Consider the following simple implementation of a traversal that prints
+all of the vertices in a graph breadth-first:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">first_vertex</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">()</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">vertex_state</span> <span class="o">=</span> <span class="p">{</span> <span class="n">first_vertex</span> <span class="p">:</span> <span class="s">&#39;VISITED&#39;</span> <span class="p">}</span>
+<span class="n">vertices_to_visit</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">([</span><span class="n">first_vertex</span><span class="p">])</span>
+<span class="k">while</span> <span class="n">vertices_to_visit</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">vertices_to_visit</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">vertex_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Visiting </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">v</span>
+        <span class="n">vertex_state</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;VISITED&#39;</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">v</span><span class="p">):</span>
+            <span class="n">vertices_to_visit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The problem with the code above is that it relies on a dictionary
+(<tt class="docutils literal"><span class="pre">vertex_state</span></tt>) and a deque (<tt class="docutils literal"><span class="pre">vertices_to_visit</span></tt>) that can both grow to
+a size that&#8217;s on the order of the size of the underlying graph. For graphs
+that are stored in external memory, this means that the traversal might
+exhaust available main memory even though the graph isn&#8217;t being pulled into
+main memory.</p>
+<p>Ideally, we&#8217;d like to be able to write algorithms in a way that&#8217;s completely
+independent of how the graph is stored, so that our algorithms could be
+used on in-memory graphs as well as graphs built on top of relational
+databases, flat files, and other external storage. yaupon solves this problem
+by providing a protocol for a graph to pass information to an algorithm about
+how it should construct primitive data structures like a dict or a deque or
+how it should sort a sequence of values.</p>
+<div class="section" id="the-backend-protocol">
+<h2>The backend protocol<a class="headerlink" href="#the-backend-protocol" title="Permalink to this headline">¶</a></h2>
+<p>If a graph class wishes to take part in the backend protocol by specifying
+how algorithms create fundamental data structures, it implements a method
+named <tt class="docutils literal"><span class="pre">__backend__</span></tt> which takes no arguments and returns a yaupon backend.
+A yaupon backend is any class that implements three methods:
+<tt class="docutils literal"><span class="pre">create_deque</span></tt>, <tt class="docutils literal"><span class="pre">create_dict</span></tt>, and <tt class="docutils literal"><span class="pre">sorted</span></tt>. In addition, a yaupon
+backend should also take part in the backend protocol by defining a
+<tt class="docutils literal"><span class="pre">__backend__</span></tt> method.</p>
+<p>As an example, here&#8217;s the definition of yaupon&#8217;s <tt class="docutils literal"><span class="pre">BackendCore</span></tt> class,
+which is the default backend:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">BackendCore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__backend__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">create_deque</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sorted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">sorted</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To link all of this together, yaupon defines a function called <tt class="docutils literal"><span class="pre">getbackend</span></tt>
+that, when called with a class, returns either whatever the class returns from
+its <tt class="docutils literal"><span class="pre">__backend__</span></tt> method or <tt class="docutils literal"><span class="pre">BackendCore</span></tt> if the class has no backend
+method. This means that for any python object <tt class="docutils literal"><span class="pre">obj</span></tt>, you can write:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">yaupon</span><span class="o">.</span><span class="n">getbackend</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>to create a dict using whatever policy for creating dict-like objects the
+object <tt class="docutils literal"><span class="pre">obj</span></tt> implements. As a convenience, yaupon also aliases these
+calls as <tt class="docutils literal"><span class="pre">ydict</span></tt>, <tt class="docutils literal"><span class="pre">ydeque</span></tt>, and <tt class="docutils literal"><span class="pre">ysorted</span></tt>, so that you write code
+like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">yaupon</span> <span class="kn">import</span> <span class="n">ydict</span><span class="p">,</span> <span class="n">ydeque</span><span class="p">,</span> <span class="n">ysorted</span><span class="p">,</span> <span class="n">Graph</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">edges</span><span class="o">=</span><span class="p">[(</span><span class="mf">0</span><span class="p">,</span><span class="mf">1</span><span class="p">),(</span><span class="mf">1</span><span class="p">,</span><span class="mf">2</span><span class="p">)])</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">ydict</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="p">{</span><span class="mf">1</span><span class="p">:</span><span class="mf">2</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ysorted</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">vertices</span><span class="p">()):</span>
+    <span class="k">print</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>Where the first argument of <tt class="docutils literal"><span class="pre">ydict</span></tt>, <tt class="docutils literal"><span class="pre">ydeque</span></tt>, and <tt class="docutils literal"><span class="pre">ysorted</span></tt> is anything
+that might implement the yaupon backend protocol, and the remaining arguments
+are anything you would pass to the constructor of Python&#8217;s <tt class="docutils literal"><span class="pre">dict</span></tt>,
+<tt class="docutils literal"><span class="pre">collections.deque</span></tt>, and <tt class="docutils literal"><span class="pre">sorted</span></tt>, respectively.</p>
+<p>Going back to our original example, we can now rewrite our traversal code
+as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">first_vertex</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">()</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">vertex_state</span> <span class="o">=</span> <span class="n">ydict</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">{</span> <span class="n">first_vertex</span> <span class="p">:</span> <span class="s">&#39;VISITED&#39;</span> <span class="p">})</span>
+<span class="n">vertices_to_visit</span> <span class="o">=</span> <span class="n">ydeque</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">[</span><span class="n">first_vertex</span><span class="p">])</span>
+<span class="k">while</span> <span class="n">vertices_to_visit</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">vertices_to_visit</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">vertex_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Visiting </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">v</span>
+        <span class="n">vertex_state</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;VISITED&#39;</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">v</span><span class="p">):</span>
+            <span class="n">vertices_to_visit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and in doing so, respect whatever policy on memory for data structures that
+<tt class="docutils literal"><span class="pre">graph</span></tt> would like to enforce.</p>
+</div>
+<div class="section" id="beyond-dicts-deques-and-sorting">
+<h2>Beyond dicts, deques, and sorting<a class="headerlink" href="#beyond-dicts-deques-and-sorting" title="Permalink to this headline">¶</a></h2>
+<p>Most other yaupon data structures...</p>
+</div>
+<div class="section" id="a-word-of-caution">
+<h2>A word of caution<a class="headerlink" href="#a-word-of-caution" title="Permalink to this headline">¶</a></h2>
+<p>Warn about nesting mutable classes within backends. For example, if you have
+a SQLiteDict d and an instance c of some class C, set d[1] = c, and c.addone()
+mutates c somehow, then d[1].addone() won&#8217;t have the desired effect since
+it&#8217;s operating on an unpickled copy of c. class BackendCore(object):</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="traversals.html" title="Traversals"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="adapters.html" title="Graph Adapters"
+             >previous</a> |</li>
+        <li><a href="index.html">yaupon v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Aaron Windsor.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>
