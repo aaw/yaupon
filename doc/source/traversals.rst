@@ -89,7 +89,11 @@ vertex in the forest defined by ``ParentEdge``.)::
    >>> import yaupon
    >>> from yaupon.traversal import *
    >>> g = yaupon.Graph(edges = [(0,1), (1,2), (2,3), (0,4)])
-   >>> visitor = AggregateVisitor(g, visitors=[ParentEdge, DiscoverTime, Depth])
+   >>> visitor = AggregateVisitor(g, visitors={ParentEdge : None, 
+                                               DiscoverTime : None, 
+                                               Depth : None
+                                               }
+                                  )
    >>> traverse(g.vertices(), visitor, depth_first_generator(g))
    >>> visitor.ParentEdge
    {0: None, 1: (0,1), 2: (1,2), 3: (2,3), 4: (0,4)}
@@ -234,6 +238,9 @@ Pre-defined visitors that can be used with ``AggregateVisitor`` include:
   * ``LowPoint``: computes the low point of each vertex, a value important in the depth-first search-based computation of :term:`articulation points <articulation point>`. 
 
   * ``LeastAncestor``: computes, for any vertex v, the minimum ``DiscoverTime`` of a vertex u attached to v through a :term:`back edge` ``(u,v)`` or a :term:`tree edge` ``(u,v)``. If no such vertex u exists, ``LeastAncestor`` returns v's ``DiscoverTime``.
+
+  * ``StopAtVertex``: short-circuits the traversal when a particular vertex
+    is found.
 
 ``AggregateVisitor`` is aware of and respects dependencies between visitors.
 ``LowPoint`` and ``LeastAncestor``, for example, both depend on the computation

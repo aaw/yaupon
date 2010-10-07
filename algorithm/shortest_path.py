@@ -22,7 +22,7 @@ class single_source(object):
             self.initial_vertex = source
 
         if self.description == 'breadth_first_search':
-            v = AggregateVisitor(visitors=[ParentEdge], backend=graph)
+            v = AggregateVisitor(visitors={ParentEdge:None}, backend=graph)
             traverse(root_vertices=[self.initial_vertex],
                      visitor=v,
                      generator=breadth_first_generator(graph))

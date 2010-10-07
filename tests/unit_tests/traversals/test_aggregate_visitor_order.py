@@ -25,14 +25,14 @@ class W(object):
     def __init__(self, x): pass
 
 def test_dependency_order_1():
-    v = AggregateVisitor(visitors=[])
-    v.add_visitor(W)
-    v.add_visitor(X)
-    v.add_visitor(Y)
-    v.add_visitor(W)
-    v.add_visitor(Y)
-    v.add_visitor(W)
-    v.add_visitor(Z)
+    v = AggregateVisitor(visitors={})
+    v.add_visitor(W, None)
+    v.add_visitor(X, None)
+    v.add_visitor(Y, None)
+    v.add_visitor(W, None)
+    v.add_visitor(Y, None)
+    v.add_visitor(W, None)
+    v.add_visitor(Z, None)
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4
@@ -42,11 +42,11 @@ def test_dependency_order_1():
     assert order.index('Y') < order.index('W')
 
 def test_dependency_order_simple():
-    v = AggregateVisitor(visitors=[])
-    v.add_visitor(X)
-    v.add_visitor(Y)
-    v.add_visitor(Z)
-    v.add_visitor(W)
+    v = AggregateVisitor(visitors={})
+    v.add_visitor(X, None)
+    v.add_visitor(Y, None)
+    v.add_visitor(Z, None)
+    v.add_visitor(W, None)
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4
@@ -56,15 +56,15 @@ def test_dependency_order_simple():
     assert order.index('Y') < order.index('W')
 
 def test_dependency_order_2():
-    v = AggregateVisitor(visitors=[])
-    v.add_visitor(Z)
-    v.add_visitor(W)
-    v.add_visitor(X)    
-    v.add_visitor(W)
-    v.add_visitor(X)
-    v.add_visitor(Y)
-    v.add_visitor(Y)
-    v.add_visitor(W)
+    v = AggregateVisitor(visitors={})
+    v.add_visitor(Z, None)
+    v.add_visitor(W, None)
+    v.add_visitor(X, None)
+    v.add_visitor(W, None)
+    v.add_visitor(X, None)
+    v.add_visitor(Y, None)
+    v.add_visitor(Y, None)
+    v.add_visitor(W, None)
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4

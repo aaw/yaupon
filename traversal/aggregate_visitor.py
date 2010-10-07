@@ -2,6 +2,7 @@ from visitor import TraversalVisitor
 from yaupon.util.shortcuts import other_vertex
 from yaupon.backend import BackendCore, getbackend
 from yaupon.data_structures import ydict
+from yaupon.traversal.traversal_exception import SuccessfulTraversal
 
 class CompositeVisitor(TraversalVisitor):
     dependencies = []
@@ -89,6 +90,14 @@ class Depth(CompositeVisitor):
         parent, v = e
         self.value[v] = self.value.setdefault(parent,0) + 1
 
+class StopAtVertex(CompositeVisitor):
+    def __init__(self, agg, vset):
+        CompositeVisitor.__init__(self, agg)
+        self.vset = vset
+
+    def discover_vertex(self, v):
+        if v in self.vset:
+            raise SuccessfulTraversal 
 
 
 class AggregateVisitor(TraversalVisitor):
@@ -100,12 +109,15 @@ class AggregateVisitor(TraversalVisitor):
         if backend is None:
             backend = BackendCore()
         self.backend = backend
-        for visitor_type in visitors:
-            self.add_visitor(visitor_type)
+        for visitor_type, args in visitors.items():
+            self.add_visitor(visitor_type, args)
 
-    def add_visitor(self, visitor_type):
+    def add_visitor(self, visitor_type, args):
         if visitor_type not in self.visitor_instances:
-            visitor_instance = visitor_type(self)
+            if args is None:
+                visitor_instance = visitor_type(self)
+            else:
+                visitor_instance = visitor_type(self, *args)
             self.visitor_instances[visitor_type] = visitor_instance
             self.visitors_by_name[visitor_type.__name__] = visitor_instance
             self.visit_order = []

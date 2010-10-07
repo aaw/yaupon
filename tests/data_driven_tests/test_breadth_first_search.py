@@ -14,7 +14,7 @@ def test_bfs_properties(graph):
     (3) connect two vertices from adjacent levels of the tree
     """
     g = graph()
-    visitor = AggregateVisitor(visitors=[ParentEdge, Depth])
+    visitor = AggregateVisitor(visitors={ParentEdge:None, Depth:None})
     traverse(g.vertices(), visitor, breadth_first_generator(g))
     tree_edges = set([e for e in visitor.ParentEdge.itervalues() \
                       if e is not None])
@@ -32,7 +32,7 @@ def test_bfs_properties_undirected(graph):
     (3) connect two vertices from adjacent levels of the tree
     """
     g = UndirectedGraph(graph())
-    visitor = AggregateVisitor(visitors=[ParentEdge, Depth])
+    visitor = AggregateVisitor(visitors={ParentEdge:None, Depth:None})
     traverse(g.vertices(), visitor, breadth_first_generator(g))
     tree_edges = set([e for e in visitor.ParentEdge.itervalues() \
                       if e is not None])
