@@ -1,7 +1,4 @@
-from yaupon.traversal.traversal import traverse
-from yaupon.traversal.visitor import *
-from yaupon.traversal.strategy import *
-from yaupon.traversal.aggregate_visitor import *
+from yaupon.traversal import *
 
 from itertools import chain
 
@@ -71,7 +68,9 @@ class boyer_myrvold(object):
     def __init__(self, g):
         self.g = g
 
-        vis = AggregateVisitor(LowPoint, LeastAncestor, Parent, ParentEdge)
+        vis = AggregateVisitor(backend=g,
+                               visitors={LowPoint:None, LeastAncestor:None, 
+                                         Parent:None, ParentEdge:None})
         traverse(g.vertices(), vis, depth_first_generator(g))
         self.vis = vis
 
@@ -128,12 +127,12 @@ class boyer_myrvold(object):
                 self.self_loops.append(e)
                 continue
             
-            if self.vis[DiscoverTime][w] < self.vis[DiscoverTime][v] or \
-               e == self.vis[ParentEdge][w]:
+            if self.vis.DiscoverTime[w] < self.vis.DiscoverTime[v] or \
+               e == self.vis.ParentEdge[w]:
                 continue
 
             self.backedges[w] = e
-            timestamp = self.vis[DiscoverTime][v]
+            timestamp = self.vis.DiscoverTime[v]
             self.backedge_flag[w] = timestamp
 
             for face_itr in chain((w,),self.first_face_iter(w)):
@@ -143,16 +142,16 @@ class boyer_myrvold(object):
                 elif self.is_bicomp_root(face_itr):
                     PRINT('Setting visited/pertinent roots for %s' % face_itr)
                     dfs_child = self.canonical_df_child[face_itr]
-                    parent = self.vis[Parent].get(dfs_child, dfs_child)
+                    parent = self.vis.Parent.get(dfs_child, dfs_child)
                     handle = self.df_face_handle[dfs_child]
                     PRINT('Handle: %s' % handle)
                     if handle.vertex is not None:
                         self.visited[handle.first_endpoint()] = timestamp
                         self.visited[handle.second_endpoint()] = timestamp
 
-                    v_df_number = self.vis[DiscoverTime][v]
-                    if self.vis[LowPoint][dfs_child] < v_df_number or \
-                       self.vis[LeastAncestor][dfs_child] < v_df_number:
+                    v_df_number = self.vis.DiscoverTime[v]
+                    if self.vis.LowPoint[dfs_child] < v_df_number or \
+                       self.vis.LeastAncestor[dfs_child] < v_df_number:
                         PRINT('Appending %s to %s''s prs' % (handle, parent))
                         self.pertinent_roots[parent].append(handle)
                     else:
@@ -232,14 +231,14 @@ class boyer_myrvold(object):
                              self.face_handle)
 
     def pertinent(self, w, v):
-        return self.backedge_flag[w] == self.vis[DiscoverTime][v] or \
+        return self.backedge_flag[w] == self.vis.DiscoverTime[v] or \
                self.pertinent_roots[w]
 
     def externally_active(self, w, v):
-        v_num = self.vis[DiscoverTime][v]
-        return self.vis[LeastAncestor][w] < v_num or \
+        v_num = self.vis.DiscoverTime[v]
+        return self.vis.LeastAncestor[w] < v_num or \
                (self.separated_df_child_list[w] and \
-                self.vis[LowPoint][self.separated_df_child_list[w][0]] < v_num)
+                self.vis.LowPoint[self.separated_df_child_list[w][0]] < v_num)
 
     def internally_active(self, w, v):
         return self.pertinent(w,v) and not self.externally_active(w,v)

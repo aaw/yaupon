@@ -33,6 +33,7 @@ def test_dependency_order_1():
     v.add_visitor(Y, None)
     v.add_visitor(W, None)
     v.add_visitor(Z, None)
+    v.compile_visit_order()
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4
@@ -47,11 +48,23 @@ def test_dependency_order_simple():
     v.add_visitor(Y, None)
     v.add_visitor(Z, None)
     v.add_visitor(W, None)
+    v.compile_visit_order()
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4
     assert order.index('X') < order.index('Y')
     assert order.index('X') < order.index('Z')
+    assert order.index('X') < order.index('W')
+    assert order.index('Y') < order.index('W')
+
+def test_dependency_order_implicit():
+    v = AggregateVisitor(visitors={})
+    v.add_visitor(W, None)
+    v.compile_visit_order()
+
+    order = [x.name for x in v.visit_order]
+    assert len(order) == 3
+    assert order.index('X') < order.index('Y')
     assert order.index('X') < order.index('W')
     assert order.index('Y') < order.index('W')
 
@@ -65,6 +78,7 @@ def test_dependency_order_2():
     v.add_visitor(Y, None)
     v.add_visitor(Y, None)
     v.add_visitor(W, None)
+    v.compile_visit_order()
 
     order = [x.name for x in v.visit_order]
     assert len(order) == 4
