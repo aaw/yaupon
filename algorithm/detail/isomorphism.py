@@ -1,26 +1,27 @@
 from itertools import izip
+from functools import partial
 
 from yaupon.data_structures import ydict, ydeque, ysorted
-from yaupon.backend import getbackend
 
 
-def canonical_form(g, reach = None):
-    if reach is None:
-        reach = sum(1 for v in g.vertices())
-    c_form = ydict(backend=g)
+def reachability_signature(g, reach):
+    sig = ydict(backend=g)
     for v in g.vertices():
-        c_form[v] = ydeque(backend=c_form)
-        c_form[v].append(1)
+        sig[v] = ydeque(sig, [1])
     for i in range(reach):
         for u in g.vertices():
-            c_form[u].append(sum([c_form[v][i] \
-                                  for x,v in g.edges(source = u)]))
+            val = sum(sig[v][i] for x,v in g.edges(source=u))
+            sig[u].append(val)
+    return ydict(g, ((k,v[-1]) for k,v in sig.iteritems()))
 
-    tuple_c_form = ydict(backend=g)
-    for x,y in c_form.iteritems():
-        tuple_c_form[x] = tuple(y)
 
-    return tuple_c_form
+def connected_component_signature(g):
+    pass
+
+
+def canonical_form(g, test_funcs):
+    result_dicts = [func(g) for func in test_funcs]
+    return ydict(g, ((v,tuple(d[v] for d in result_dicts)) for v in g.vertices()))
 
 
 def function_inverse(f, backend):
@@ -53,15 +54,18 @@ def is_a_partial_isomorphism(g1, g2, iso):
     return True
 
 
-
-
 def isomorphism(g1, g2, reach = 5):
     if sum(1 for v in g1.vertices()) != sum(1 for v in g2.vertices()) or \
        sum(1 for e in g1.edges()) != sum(1 for e in g2.edges()):
         return None
 
-    g1cf = canonical_form(g1, reach)
-    g2cf = canonical_form(g2, reach)
+                         #reachability_signature(g, reach):
+    test_funcs = [partial(reachability_signature, reach=1),
+                  partial(reachability_signature, reach=2),
+                  partial(reachability_signature, reach=4),
+                  partial(reachability_signature, reach=8)]
+    g1cf = canonical_form(g1, test_funcs)
+    g2cf = canonical_form(g2, test_funcs)
 
     sorted_g1cf = ysorted(g1, g1cf.itervalues())
     sorted_g2cf = ysorted(g2, g2cf.itervalues())
@@ -70,7 +74,7 @@ def isomorphism(g1, g2, reach = 5):
         if x != y:
             return None
 
-    g2_cform_inv = function_inverse(g2cf, getbackend(g2))
+    g2_cform_inv = function_inverse(g2cf, g2)
 
     iso = ydict(backend=g1)
 
@@ -85,10 +89,6 @@ def isomorphism(g1, g2, reach = 5):
     while index >= 0 and index < len(contexts):
         vertex = contexts[index][0]
         if contexts[index][1]:
-            # this is a deque class inside of a sqlitedeque,
-            # so when you call popleft, that's happening on the
-            # unpickled version, but nothing pickles back the modified
-            # value!
             v_prime = contexts[index][1].popleft()
             iso[vertex] = v_prime
             if is_a_partial_isomorphism(g1, g2, iso):
