@@ -54,16 +54,14 @@ def is_a_partial_isomorphism(g1, g2, iso):
     return True
 
 
-def isomorphism(g1, g2, reach = 5):
+def isomorphism(g1, g2):
     if sum(1 for v in g1.vertices()) != sum(1 for v in g2.vertices()) or \
        sum(1 for e in g1.edges()) != sum(1 for e in g2.edges()):
         return None
 
-                         #reachability_signature(g, reach):
     test_funcs = [partial(reachability_signature, reach=1),
                   partial(reachability_signature, reach=2),
-                  partial(reachability_signature, reach=4),
-                  partial(reachability_signature, reach=8)]
+                  partial(reachability_signature, reach=4)]
     g1cf = canonical_form(g1, test_funcs)
     g2cf = canonical_form(g2, test_funcs)
 
