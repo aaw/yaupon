@@ -7,7 +7,7 @@ class isomorphism(object):
         self.description = description
 
     def compile(self, g1, g2):
-        self.iso = backtracking_isomorphism.isomorphism(g1,g2,5)
+        self.iso = backtracking_isomorphism.isomorphism(g1,g2)
         if self.iso is None:
             raise NoIsomorphismExists
 

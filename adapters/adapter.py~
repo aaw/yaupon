@@ -1,9 +1,0 @@
-class Adapter(object):
-    def __init__(self, graph):
-        self.graph = graph
-
-    def __getattr__(self, x):
-        graph_attr = getattr(self.graph, x, None)
-        if graph_attr is not None:
-            return graph_attr
-        return getattr(self, x)
