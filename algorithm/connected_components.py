@@ -28,19 +28,18 @@ class ConnectedComponents(CompositeVisitor):
     def finish_vertex(self, v):
         if v == self.P[-1]:
             while self.value.get(v) is None:
-                self.value[self.S.pop()] = next_component_id
+                self.value[self.S.pop()] = self.next_component_id
             self.P.pop()
-            next_component_id += 1
+            self.next_component_id += 1
 
 class StronglyConnectedComponents(object):
     def __init__(self, graph):
-        self.description = 'Cheriyan-Mehlhorn/Gabow strongly-connected components'
+        self.description = \
+            'Cheriyan-Mehlhorn/Gabow strongly-connected components'
         generator = depth_first_generator(graph)
         visitor = AggregateVisitor(backend=graph, 
-                                   visitors=[DiscoverTime, ConnectedComponents]) 
-        #TODO: haven't merged with most recent changes on origin, but when I do, DiscoverTime
-        #      doesn't need to be mentioned above
-        traverse(root_vertices=[graph.vertices().next()],
+                                   visitors={ConnectedComponents:None}) 
+        traverse(root_vertices=graph.vertices(),
                  visitor=visitor,
                  generator=depth_first_generator(graph))
         self.components = visitor.ConnectedComponents

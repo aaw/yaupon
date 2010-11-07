@@ -156,6 +156,7 @@ class AggregateVisitor(TraversalVisitor):
             visitor.start_traversal(v)
     
     def discover_vertex(self, v):
+        #TODO: why is next line here?
         TraversalVisitor.discover_vertex(self,v)
         for visitor in self.visit_order:
             visitor.discover_vertex(v)

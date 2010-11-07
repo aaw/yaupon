@@ -19,11 +19,11 @@ def traverse_from_vertex_helper(vertex, visitor, generator):
     visitor.discover_vertex(vertex)
 
     for record in generator.events():
-
         if record['type'] == 'VERTEX':
             #only state here is FINISHED
-            visitor.finish_vertex(vertex)
-        else:
+            state, finished_vertex = record['state'], record['vertex']
+            visitor.finish_vertex(finished_vertex)
+        else: #'type': 'EDGE'
             target_state, edge = record['target_state'], record['edge']
             if target_state == 'UNDISCOVERED':
                 visitor.discover_vertex(edge[1])

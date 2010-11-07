@@ -2,7 +2,7 @@ import uuid
 
 class UUIDGenerator(object):
     def __call__(self):
-        return uuid.uuid4()
+        return str(uuid.uuid4())
 
 class IntGenerator(object):
     def __init__(self, start = None):
