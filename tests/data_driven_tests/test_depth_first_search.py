@@ -9,7 +9,7 @@ def pytest_generate_tests(metafunc):
 
 def test_every_vertex_discovered(graph):
     g = graph()
-    visitor = AggregateVisitor(visitors=[DiscoverTime])
+    visitor = AggregateVisitor(visitors={DiscoverTime:None})
     traverse(g.vertices(), visitor, depth_first_generator(g))
     discover_times = set()
     for v in g.vertices():
@@ -29,7 +29,9 @@ def test_graph_splits(graph):
     vertices visited after X in the original graph.
     """
     g = graph()
-    visitor = AggregateVisitor(visitors=[Parent, ParentEdge, DiscoverTime])
+    visitor = AggregateVisitor(visitors={Parent : None, 
+                                         ParentEdge : None, 
+                                         DiscoverTime : None})
     traverse(g.vertices(), visitor, depth_first_generator(g))
     root = [v for v,time in visitor.DiscoverTime.iteritems() if time == 0][0]
     root_edges = [visitor.ParentEdge[v] for v in g.vertices() \
@@ -53,7 +55,9 @@ def test_graph_splits_undirected(graph):
     before X and any vertices visited after X in the original graph.
     """
     g = UndirectedGraph(graph())
-    visitor = AggregateVisitor(visitors=[Parent, ParentEdge, DiscoverTime])
+    visitor = AggregateVisitor(visitors={Parent : None, 
+                                         ParentEdge : None, 
+                                         DiscoverTime : None})
     traverse(g.vertices(), visitor, depth_first_generator(g))
     root = [v for v,time in visitor.DiscoverTime.iteritems() if time == 0][0]
     root_edges = [visitor.ParentEdge[v] for v in g.vertices() \

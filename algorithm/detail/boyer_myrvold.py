@@ -1,9 +1,10 @@
-from yaupon.traversal.traversal import traverse
-from yaupon.traversal.visitor import *
-from yaupon.traversal.strategy import *
-from yaupon.traversal.aggregate_visitor import *
+from yaupon.traversal import *
+from yaupon.adapters.undirected_graph import UndirectedGraph
+from yaupon.util.shortcuts import other_vertex
 
 from itertools import chain
+from functools import partial
+from operator import getitem
 
 DEBUG_LEVEL = 0 # greater value == less output
 
@@ -69,43 +70,50 @@ class face_handle(object):
 class boyer_myrvold(object):
 
     def __init__(self, g):
-        self.g = g
+        self.g = UndirectedGraph(g)
 
-        vis = AggregateVisitor(LowPoint, LeastAncestor, Parent, ParentEdge)
-        traverse(g.vertices(), vis, depth_first_generator(g))
-        self.vis = vis
+        v = {LowPoint:None, LeastAncestor:None, Parent:None, ParentEdge:None}
+        self.vis = AggregateVisitor(backend=self.g, visitors=v)
+        traverse(self.g.vertices(), self.vis, depth_first_generator(self.g))
 
         self.vertices_by_lowpoint = \
-            sorted(g.vertices(), key = lambda x : vis.LowPoint[x])
+            sorted(self.g.vertices(), 
+                   key=partial(getitem, self.vis.LowPoint))
 
         self.vertices_by_dfs_num = \
-            sorted(g.vertices(), key = lambda x : vis.DiscoverTime[x])
+            sorted(self.g.vertices(), 
+                   key=partial(getitem, self.vis.DiscoverTime))
 
         self.face_handle = {}
         self.df_face_handle = {}
-        self.canonical_df_child = dict((v,v) for v in g.vertices())
-        self.pertinent_roots = dict((v,[]) for v in g.vertices())
-        self.separated_df_child_list = dict((v,[]) for v in g.vertices())
+        self.canonical_df_child = dict((v,v) for v in self.g.vertices())
+        self.pertinent_roots = dict((v,[]) for v in self.g.vertices())
+        self.separated_df_child_list = dict((v,[]) for v in self.g.vertices())
         self.self_loops = []
         self.backedges = {}
-        self.backedge_flag = dict((v,-1) for v in g.vertices())
-        self.visited = dict((v,-1) for v in g.vertices())
+        self.backedge_flag = dict((v,-1) for v in self.g.vertices())
+        self.visited = dict((v,-1) for v in self.g.vertices())
 
-        for v in g.vertices():
-            parent = vis.Parent.get(v)
-            parent_edge = vis.ParentEdge.get(v)
+        for v in self.g.vertices():
+            parent = self.vis.Parent.get(v)
+            parent_edge = self.vis.ParentEdge.get(v)
             handle_list = [] if parent is None else [parent_edge]
             self.face_handle[v] = face_handle(v, handle_list[:])
             self.df_face_handle[v] = face_handle(parent, handle_list[:])
 
-        for v in g.vertices():
-            PRINT('Parent %s: %s' % (v, vis.ParentEdge.get(v)), 1)
+        PRINT('Parent: %s' % self.vis.Parent, 1)
 
-        for v in g.vertices():
-            PRINT('DiscoverTime %s: %s' % (v, vis.DiscoverTime.get(v)), 1)
+        for v in self.g.vertices():
+            PRINT('ParentEdge %s: %s' % (v, self.vis.ParentEdge.get(v)), 1)
 
-        for v in g.vertices():
-            PRINT('LowPoint %s: %s' % (v, vis.LowPoint.get(v)), 1)
+        for v in self.g.vertices():
+            PRINT('DiscoverTime %s: %s' % (v, self.vis.DiscoverTime.get(v)), 1)
+
+        for v in self.g.vertices():
+            PRINT('LowPoint %s: %s' % (v, self.vis.LowPoint.get(v)), 1)
+
+        PRINT('Vertices by dfs num: %s' % self.vertices_by_dfs_num)
+            
 
     def planar_embedding(self):
 
@@ -121,19 +129,21 @@ class boyer_myrvold(object):
     def walkup(self, v):
         
         PRINT('--- Starting walkup from %s ---' % v, 1)
-        for e in chain(self.g.edges(source = v), self.g.edges(target = v)):
-            w = e[1] if e[1] != v else e[0]
+        PRINT('--- edges to consider: %s ---' % \
+                  [e for e in self.g.edges(source=v)])
+        for e in self.g.edges(source = v):
+            w = other_vertex(e, v)
             PRINT('Looking at (v,w) = (%s,%s)' % (v,w), 4)
             if v == w:
                 self.self_loops.append(e)
                 continue
             
-            if self.vis[DiscoverTime][w] < self.vis[DiscoverTime][v] or \
-               e == self.vis[ParentEdge][w]:
+            if self.vis.DiscoverTime[w] < self.vis.DiscoverTime[v] or \
+               e == self.vis.ParentEdge[w]:
                 continue
 
             self.backedges[w] = e
-            timestamp = self.vis[DiscoverTime][v]
+            timestamp = self.vis.DiscoverTime[v]
             self.backedge_flag[w] = timestamp
 
             for face_itr in chain((w,),self.first_face_iter(w)):
@@ -143,16 +153,16 @@ class boyer_myrvold(object):
                 elif self.is_bicomp_root(face_itr):
                     PRINT('Setting visited/pertinent roots for %s' % face_itr)
                     dfs_child = self.canonical_df_child[face_itr]
-                    parent = self.vis[Parent].get(dfs_child, dfs_child)
+                    parent = self.vis.Parent.get(dfs_child, dfs_child)
                     handle = self.df_face_handle[dfs_child]
                     PRINT('Handle: %s' % handle)
                     if handle.vertex is not None:
                         self.visited[handle.first_endpoint()] = timestamp
                         self.visited[handle.second_endpoint()] = timestamp
 
-                    v_df_number = self.vis[DiscoverTime][v]
-                    if self.vis[LowPoint][dfs_child] < v_df_number or \
-                       self.vis[LeastAncestor][dfs_child] < v_df_number:
+                    v_df_number = self.vis.DiscoverTime[v]
+                    if self.vis.LowPoint[dfs_child] < v_df_number or \
+                       self.vis.LeastAncestor[dfs_child] < v_df_number:
                         PRINT('Appending %s to %s''s prs' % (handle, parent))
                         self.pertinent_roots[parent].append(handle)
                     else:
@@ -232,14 +242,14 @@ class boyer_myrvold(object):
                              self.face_handle)
 
     def pertinent(self, w, v):
-        return self.backedge_flag[w] == self.vis[DiscoverTime][v] or \
+        return self.backedge_flag[w] == self.vis.DiscoverTime[v] or \
                self.pertinent_roots[w]
 
     def externally_active(self, w, v):
-        v_num = self.vis[DiscoverTime][v]
-        return self.vis[LeastAncestor][w] < v_num or \
+        v_num = self.vis.DiscoverTime[v]
+        return self.vis.LeastAncestor[w] < v_num or \
                (self.separated_df_child_list[w] and \
-                self.vis[LowPoint][self.separated_df_child_list[w][0]] < v_num)
+                self.vis.LowPoint[self.separated_df_child_list[w][0]] < v_num)
 
     def internally_active(self, w, v):
         return self.pertinent(w,v) and not self.externally_active(w,v)
@@ -262,7 +272,7 @@ if __name__ == '__main__':
     import yaupon
     g = yaupon.Graph()
 
-    if 0 == 1:
+    if False:
 
         for v_num in xrange(1,10):
             g.add_vertex(v_num)
@@ -280,17 +290,19 @@ if __name__ == '__main__':
         g.add_edge(4,6)
         g.add_edge(4,7)
 
-    else:
+    elif True:
 
         for i in xrange(5):
-            g.add_vertex(i)
             for j in xrange(i):
                 PRINT('Adding (%s,%s)' % (i,j))
                 g.add_edge(i,j)
 
-    for u,v in [e for e in g.edges()]:
-        g.add_edge(v,u)
+    else:
 
+        for i in xrange(5):
+            g.add_edge(i, i+1)
+
+    print 'Graph is: %s' % [e for e in g.edges()]
     import time
     start = time.time()
     bm = boyer_myrvold(g)

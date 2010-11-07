@@ -2,6 +2,7 @@ from visitor import TraversalVisitor
 from yaupon.util.shortcuts import other_vertex
 from yaupon.backend import BackendCore, getbackend
 from yaupon.data_structures import ydict
+from yaupon.traversal.traversal_exception import SuccessfulTraversal
 
 class CompositeVisitor(TraversalVisitor):
     dependencies = []
@@ -38,7 +39,7 @@ class LowPoint(CompositeVisitor):
         CompositeVisitor.__init__(self, agg)
 
     def discover_vertex(self, v):
-        self.value[v] = self.properties[DiscoverTime][v]
+        self.value[v] = self.properties.DiscoverTime[v]
 
     def tree_edge(self, e):
         u,v = e
@@ -46,7 +47,7 @@ class LowPoint(CompositeVisitor):
 
     def back_edge(self, e):
         u,v = e
-        v_discover_time = self.properties[DiscoverTime][v]
+        v_discover_time = self.properties.DiscoverTime[v]
         self.value[u] = min(self.value[u], v_discover_time)
 
 class LeastAncestor(CompositeVisitor):
@@ -56,16 +57,16 @@ class LeastAncestor(CompositeVisitor):
         CompositeVisitor.__init__(self, agg)
 
     def discover_vertex(self, v):
-        self.value[v] = self.properties[DiscoverTime][v]
+        self.value[v] = self.properties.DiscoverTime[v]
 
     def tree_edge(self, e):
         u,v = e
-        self.value[v] = self.properties[DiscoverTime][u]
+        self.value[v] = self.properties.DiscoverTime[u]
 
     def back_edge(self, e):
         u,v = e
         self.value[u] = min(self.value[u], 
-                            self.properties[DiscoverTime][v])
+                            self.properties.DiscoverTime[v])
     
 class Parent(CompositeVisitor):
     def __init__(self, agg):
@@ -89,38 +90,58 @@ class Depth(CompositeVisitor):
         parent, v = e
         self.value[v] = self.value.setdefault(parent,0) + 1
 
+class StopAtVertex(CompositeVisitor):
+    def __init__(self, agg, vset):
+        CompositeVisitor.__init__(self, agg)
+        self.vset = vset
+
+    def discover_vertex(self, v):
+        if v in self.vset:
+            raise SuccessfulTraversal 
 
 
 class AggregateVisitor(TraversalVisitor):
     def __init__(self, visitors, backend=None):
         TraversalVisitor.__init__(self)
+        self.visit_order_dirty = True
         self.visitor_instances = {}
         self.visitors_by_name = {}
         self.visit_order = []
-        if backend is None:
-            backend = BackendCore()
-        self.backend = backend
-        for visitor_type in visitors:
-            self.add_visitor(visitor_type)
-
-    def add_visitor(self, visitor_type):
-        if visitor_type not in self.visitor_instances:
-            visitor_instance = visitor_type(self)
-            self.visitor_instances[visitor_type] = visitor_instance
-            self.visitors_by_name[visitor_type.__name__] = visitor_instance
-            self.visit_order = []
-            self.compute_dependencies(visitor_type)
-            for v in self.visitor_instances:
-                self.compute_dependencies(v)
+        self.backend = BackendCore() if backend is None else backend
+        for visitor_type, args in visitors.items():
+            self.add_visitor(visitor_type, args)
+        self.compile_visit_order()
     
-    def compute_dependencies(self, visitor_type):
-        for dependency in visitor_type.dependencies:
-            if dependency not in self.visitor_instances:
-                self.visitor_instances[dependency] = dependency(self)
-            if dependency not in self.visit_order:
-                self.compute_dependencies(dependency)
-        if not [x for x in self.visit_order if type(x) == visitor_type]:
-            self.visit_order.append(self.visitor_instances[visitor_type])
+    def __ensure_visitor_instantiated(self, visitor_type, args):
+        if visitor_type not in self.visitor_instances:
+            if args is None:
+                visitor_instance = visitor_type(self)
+            else:
+                visitor_instance = visitor_type(self, *args)
+            self.visitor_instances[visitor_type] = visitor_instance
+        return self.visitor_instances[visitor_type]
+
+    def add_visitor(self, visitor_type, args):
+        self.visit_order_dirty = True
+        self.__ensure_visitor_instantiated(visitor_type, args)
+
+    def compile_visit_order(self):
+        self.visit_order = []
+        self.visitors_by_name = {}
+        for v in self.visitor_instances.values():
+            self.__compute_dependencies(v)
+        self.visit_order_dirty = False
+
+    def __compute_dependencies(self, visitor):
+        for dependency in visitor.dependencies:
+            # Note implicit dependencies can't take arguments, since
+            # there's no good way to specify them (they're implicit!)
+            instance = self.__ensure_visitor_instantiated(dependency, None) 
+            self.__compute_dependencies(instance)
+        visitor_name = visitor.__class__.__name__
+        if self.visitors_by_name.get(visitor_name) is None:
+            self.visit_order.append(visitor)
+            self.visitors_by_name[visitor_name] = visitor
 
     def __getattr__(self, name):
         visitor = self.visitors_by_name.get(name)
@@ -129,6 +150,8 @@ class AggregateVisitor(TraversalVisitor):
         return visitor.value
 
     def start_traversal(self, v):
+        if self.visit_order_dirty:
+            self.compile_visit_order()
         for visitor in self.visit_order:
             visitor.start_traversal(v)
     

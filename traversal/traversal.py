@@ -3,8 +3,11 @@ from yaupon.traversal.traversal_exception import *
 
 
 def traverse(root_vertices, visitor, generator):
-    for vertex in root_vertices:
-        traverse_from_vertex_helper(vertex, visitor, generator)
+    try:
+        for vertex in root_vertices:
+            traverse_from_vertex_helper(vertex, visitor, generator)
+    except SuccessfulTraversal:
+        pass
 
 
 def traverse_from_vertex_helper(vertex, visitor, generator):

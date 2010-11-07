@@ -1,17 +1,30 @@
 import yaupon
 from yaupon.traversal import *
 
-def test_line_graph(size = 10):
+def test_line_graph(size=10):
     """
     On a line graph, dfs should enumerate vertices consecutively
     """
     g = yaupon.Graph(edges = [(i,i+1) for i in xrange(size-1)])
     for v in g.vertices():
-        visitor = AggregateVisitor(visitors=[DiscoverTime])
+        visitor = AggregateVisitor(visitors={DiscoverTime:None})
         traverse([v], visitor, depth_first_generator(g))
         for i in xrange(size - 1):
             if i >= v:
                 assert visitor.DiscoverTime[i] <= visitor.DiscoverTime[i+1]
+
+def test_short_circuit_depth_first_search(size=10):
+    """
+    This is really a test of the StopAtVertex aggregate visitor
+    """
+    g = yaupon.Graph(edges = [(i,i+1) for i in xrange(size-1)])
+    visitor = AggregateVisitor(visitors={DiscoverTime : None,
+                                         StopAtVertex : ([5],)})
+    traverse([0], visitor, depth_first_generator(g))
+    for i in xrange(6):
+        assert i in visitor.DiscoverTime
+    for i in xrange(6,size):
+        assert i not in visitor.DiscoverTime
 
 def test_forks():
     """
@@ -37,7 +50,7 @@ def test_forks():
     g.add_edge(root,w2)
     g.add_edge(w2,w3)
 
-    visitor = AggregateVisitor(visitors=[Parent])
+    visitor = AggregateVisitor(visitors={Parent:None})
     traverse([root], visitor, depth_first_generator(g))
     assert visitor.Parent[u2] == root
     assert visitor.Parent[u3] == u2
@@ -58,7 +71,9 @@ def test_graph_splits():
                               (5,9),(1,4),(4,6),(6,1),(1,3),(6,7),
                               (7,0),(9,8),(8,3),(0,10),(10,11),(11,12),
                               (0,13),(13,14),(14,15),(15,13),(14,13)])
-    visitor = AggregateVisitor(visitors=[Parent, ParentEdge, DiscoverTime])
+    visitor = AggregateVisitor(visitors={Parent : None, 
+                                         ParentEdge : None, 
+                                         DiscoverTime : None})
     traverse([0], visitor, depth_first_generator(g))
     root_edges = [visitor.ParentEdge[v] for v in g.vertices() \
                   if v != 0 and visitor.Parent[v] == 0] 
