@@ -2,7 +2,7 @@ from itertools import izip
 from functools import partial
 
 from yaupon.data_structures import ydict, ydeque, ysorted
-
+from yaupon.algorithm import connected_components
 
 def reachability_signature(g, reach):
     sig = ydict(backend=g)
@@ -16,12 +16,18 @@ def reachability_signature(g, reach):
 
 
 def connected_component_signature(g):
-    pass
+    components = connected_components.compile(g)
+    component_size = ydict(g)
+    for v in g.vertices():
+        c = components(v)
+        component_size[c] = component_size.setdefault(c,0) + 1
+    return ydict(g, ((v, component_size[components(v)]) for v in g.vertices()))
 
 
 def canonical_form(g, test_funcs):
     result_dicts = [func(g) for func in test_funcs]
-    return ydict(g, ((v,tuple(d[v] for d in result_dicts)) for v in g.vertices()))
+    return ydict(g, ((v,tuple(d[v] for d in result_dicts)) 
+                     for v in g.vertices()))
 
 
 def function_inverse(f, backend):
