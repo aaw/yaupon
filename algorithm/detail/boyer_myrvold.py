@@ -90,7 +90,7 @@ class boyer_myrvold(object):
         self.pertinent_roots = dict((v,[]) for v in self.g.vertices())
         self.separated_df_child_list = dict((v,[]) for v in self.g.vertices())
         self.self_loops = []
-        self.backedges = {}
+        self.backedges = dict((v,[]) for v in self.g.vertices())
         self.backedge_flag = dict((v,-1) for v in self.g.vertices())
         self.visited = dict((v,-1) for v in self.g.vertices())
 
@@ -142,7 +142,7 @@ class boyer_myrvold(object):
                e == self.vis.ParentEdge[w]:
                 continue
 
-            self.backedges[w] = e
+            self.backedges[w].append(e)
             timestamp = self.vis.DiscoverTime[v]
             self.backedge_flag[w] = timestamp
 
