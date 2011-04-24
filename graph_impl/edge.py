@@ -45,4 +45,4 @@ class MultiEdge(object):
         return cmp(self.id, other_id)
 
     def __hash__(self):
-        return self.id
+        return hash(self.id)
